@@ -25,3 +25,6 @@ Thumbs.db
 *.swo
 *.bak
 *.tmp
+
+# DataBase
+mysql_data/

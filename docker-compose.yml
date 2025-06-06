@@ -1,0 +1,57 @@
+version: '3.8'
+
+services:
+
+  db:
+    image: mysql:8.4
+    container_name: tenis_db
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_DATABASE: tenis_trainer_web
+      MYSQL_USER: budi
+      MYSQL_PASSWORD: pass
+      MYSQL_ROOT_PASSWORD: root
+    volumes:
+      - ./docker/mysql/initdb.d:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: [
+        "CMD-SHELL",
+        "mysql --silent --connect-timeout=5 -uroot -p$$MYSQL_ROOT_PASSWORD -e 'SELECT 1' || exit 1"
+      ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  backend:
+    build:
+      context: ./backend
+    container_name: tenis_backend
+    ports:
+      - "8080:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      - DB_HOST=db
+      - DB_PORT=3306
+      - DB_USER=budi
+      - DB_PASS=pass
+      - DB_NAME=tenis_trainer_web
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: tenis_frontend
+    ports:
+      - "5173:5173"
+    depends_on:
+      backend:
+        condition: service_healthy
