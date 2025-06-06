@@ -1,0 +1,27 @@
+# Backend
+/backend/target/
+/backend/.env
+/backend/*.iml
+/backend/.idea/
+
+# Frontend
+/frontend/node_modules/
+/frontend/dist/
+/frontend/.env
+/frontend/.vite/
+
+# Automation (optional)
+/automation/*.log
+/automation/temp/
+
+# macOS system files
+.DS_Store
+
+# Windows system files
+Thumbs.db
+
+# General editor files
+*.swp
+*.swo
+*.bak
+*.tmp
