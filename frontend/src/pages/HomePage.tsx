@@ -1,6 +1,8 @@
 import React from 'react';
 import Header from '../components/Header.tsx';
 import Footer from '../components/Footer.tsx';
+import actionBudi from '../assets/3.jpg';
+import coach from '../assets/2.jpg';
 
 const HomePage: React.FC = () => {
   return (
@@ -20,7 +22,7 @@ const HomePage: React.FC = () => {
                     <div className="u-align-center u-container-align-center u-container-style u-layout-cell u-left-cell u-shape-rectangle u-size-40 u-white u-layout-cell-1">
                       <div className="u-container-layout u-container-layout-1">
                         <img
-                          src="images/2.jpg"
+                          src={actionBudi}
                           alt="Treninzi za rekreativce"
                           className="custom-expanded u-image u-image-default u-image-1"
                         />
@@ -67,7 +69,7 @@ const HomePage: React.FC = () => {
                       <div className="u-container-layout u-container-layout-5">
                         <div className="u-align-left-xs u-color-scheme-u11 u-color-style-multicolor-1 u-expanded-height u-palette-2-base u-shape u-shape-rectangle u-shape-2"></div>
                         <img
-                          src="images/djeca.jpg"
+                          src={coach}
                           alt="Treninzi za mališane"
                           className="custom-expanded u-image u-image-2"
                         />

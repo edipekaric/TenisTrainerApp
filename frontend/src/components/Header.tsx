@@ -1,12 +1,13 @@
 import React from 'react';
 import '../styles/nicepage.css';
+import logo from '../assets/logo.png';
 
 const Header: React.FC = () => {
   return (
     <header className="u-clearfix u-header u-header" id="sec-6c67">
       <div className="u-clearfix u-sheet u-sheet-1">
         <a href="/" className="u-image u-logo u-image-1">
-          <img src="images/default-logo.png" className="u-logo-image u-logo-image-1" alt="Logo" />
+          <img src={logo} className="u-logo-image u-logo-image-1" alt="Logo" />
         </a>
         <nav className="u-menu u-menu-dropdown u-offcanvas u-menu-1">
           <div className="menu-collapse">
