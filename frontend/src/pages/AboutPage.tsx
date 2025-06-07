@@ -1,4 +1,6 @@
 import React from 'react';
+import Header from '../components/Header';
+import Footer from '../components/Footer';
 import '../styles/nicepage.css';
 import portreit from '../assets/1.jpg';
 import galleryImg1 from '../assets/kids1.jpg';
@@ -6,10 +8,12 @@ import galleryImg2 from '../assets/kids2.jpg';
 
 const AboutPage: React.FC = () => {
   return (
-    <main>
-      {/* About Section */}
-      <section className="u-clearfix u-section-1" id="about-section" style={{ padding: '60px 20px' }}>
-        <div className="u-clearfix u-sheet u-sheet-1" style={{ display: 'flex', flexWrap: 'wrap', gap: '40px', justifyContent: 'center' }}>
+    <div className="u-body u-xl-mode">
+      <Header />
+
+      <main style={{ padding: '40px 20px', maxWidth: '1200px', margin: '0 auto' }}>
+        {/* About Section */}
+        <section style={{ display: 'flex', flexWrap: 'wrap', gap: '20px', alignItems: 'center', marginBottom: '40px' }}>
           {/* Left Image */}
           <div style={{ flex: '1 1 300px', maxWidth: '500px' }}>
             <img
@@ -34,36 +38,46 @@ const AboutPage: React.FC = () => {
               Vidimo se na terenu!
             </p>
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* Gallery Section */}
-      <section className="u-clearfix u-section-2" id="gallery-section" style={{ padding: '40px 20px', backgroundColor: '#f9f9f9' }}>
-        <div className="u-clearfix u-sheet u-sheet-1" style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '20px' }}>
-          <div style={{ flex: '1 1 300px', maxWidth: '400px' }}>
-            <img
-              src={galleryImg1}
-              alt="Gallery Image 1"
-              style={{ width: '100%', height: 'auto', borderRadius: '8px', objectFit: 'cover' }}
-            />
-            <div style={{ textAlign: 'center', marginTop: '8px', fontSize: '0.9rem', color: '#666' }}>
-              Sample Title - Sample Text
+        {/* Gallery Section */}
+        <section style={{ marginBottom: '40px' }}>
+          <h2 style={{ fontSize: '1.5rem', marginBottom: '20px', textAlign: 'center' }}>Galerija</h2>
+          <div
+            style={{
+              display: 'flex',
+              overflowX: 'auto',
+              gap: '20px',
+              paddingBottom: '10px',
+            }}
+          >
+            <div style={{ flex: '0 0 auto', width: '300px' }}>
+              <img
+                src={galleryImg1}
+                alt="Gallery Image 1"
+                style={{ width: '100%', height: 'auto', borderRadius: '8px', objectFit: 'cover' }}
+              />
+              <div style={{ textAlign: 'center', marginTop: '8px', fontSize: '0.9rem', color: '#666' }}>
+                Sample Title - Sample Text
+              </div>
+            </div>
+
+            <div style={{ flex: '0 0 auto', width: '300px' }}>
+              <img
+                src={galleryImg2}
+                alt="Gallery Image 2"
+                style={{ width: '100%', height: 'auto', borderRadius: '8px', objectFit: 'cover' }}
+              />
+              <div style={{ textAlign: 'center', marginTop: '8px', fontSize: '0.9rem', color: '#666' }}>
+                Sample Title - Sample Text
+              </div>
             </div>
           </div>
+        </section>
+      </main>
 
-          <div style={{ flex: '1 1 300px', maxWidth: '400px' }}>
-            <img
-              src={galleryImg2}
-              alt="Gallery Image 2"
-              style={{ width: '100%', height: 'auto', borderRadius: '8px', objectFit: 'cover' }}
-            />
-            <div style={{ textAlign: 'center', marginTop: '8px', fontSize: '0.9rem', color: '#666' }}>
-              Sample Title - Sample Text
-            </div>
-          </div>
-        </div>
-      </section>
-    </main>
+      <Footer />
+    </div>
   );
 };
 
