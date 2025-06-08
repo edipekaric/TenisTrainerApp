@@ -1,0 +1,68 @@
+@media (max-width: 768px) {
+  .u-layout-row {
+    flex-direction: column !important;
+    align-items: center !important;
+  }
+
+  .u-layout-col {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  .u-layout-cell {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  .u-layout-cell img {
+    max-width: 90% !important;
+    height: auto !important;
+  }
+
+  .u-container-layout {
+    padding: 10px !important;
+  }
+
+  .u-layout-cell-4 {
+    width: 100% !important;
+    max-width: 90% !important;
+    margin: 20px auto 0 auto !important; /* move image a bit more down */
+    padding: 10px !important;
+    background-color: #db545a !important; /* RED — same as u-palette-2-base → you can adjust */
+    box-sizing: border-box !important;
+    border-radius: 8px; /* optional */
+  }
+
+  .u-layout-cell-4 img {
+    width: 100% !important;
+    height: auto !important;
+    display: block !important;
+    margin-top: 10px !important; /* push image a bit down */
+    border-radius: 8px; /* optional, makes it look nicer */
+  }
+
+  .u-container-layout-1 {
+    width: 100% !important;
+    max-width: 90% !important;
+    margin: 0 auto !important;
+    padding: 10px !important;
+    box-sizing: border-box !important;
+  }
+
+  .u-container-layout-2 {
+    width: 100% !important;
+    max-width: 90% !important;
+    margin: 20px auto 0 auto !important;
+    padding: 10px !important;
+    background-color: #fff !important;
+    box-sizing: border-box !important;
+    border-radius: 8px;
+  }
+  
+}
+
+@media (max-width: 768px) {
+  .u-shape-2 {
+    display: none !important;
+  }
+}

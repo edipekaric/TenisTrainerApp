@@ -41,11 +41,11 @@ const ContactPage: React.FC = () => {
             }}
           >
             <p style={{ marginBottom: '20px' }}>
-              Spremni ste na sljedeći korak? Želite se raspitati, rezervisati termin za sebe ili dijete? Kontaktirajte me na Viber/Whatsapp ili putem poziva sa Vašim pitanjima, a ja ću se potruditi da Vam odgovorim.
+              Spremni ste na sljedeći korak? Želite se raspitati, rezervisati termin za sebe ili dijete? Kontaktirajte me na Viber/Whatsapp ili putem poziva i razvijajmo se uz tenis.
             </p>
 
             <p style={{ marginBottom: '20px' }}>
-              Nakon informativnog razgovora ako ste idalje zainteresirani, registirat cemo Vas na stranicu i mozete rezervisati svoj termin online, bez muke, bez zivkanja, poruka, odmah ce Vam na uvidu biti dostupni termini.
+              Nakon informativnog razgovora ako ste idalje zainteresovani, registirati cemo Vas na stranicu i mozete rezervisati svoj termin online, bez muke, bez zivkanja, poruka i odmah ce Vam na uvidu biti dostupni termini.
             </p>
 
             {/* Phone button */}

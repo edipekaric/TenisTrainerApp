@@ -26,14 +26,13 @@ const AboutPage: React.FC = () => {
           {/* Right Text */}
           <div style={{ flex: '1 1 300px', maxWidth: '600px', fontSize: '1rem', lineHeight: '1.6', color: '#333' }}>
             <p>
-              Ja sam Tarik Budimlija, licencirani privatni trener tenisa sa višegodišnjim iskustvom u radu sa djecom, mladima i odraslima.
-              Tenis treniram više od 15 godina, a posljednje 4 godine aktivno radim kao trener. Također pohađam fakultet DIF i posjedujem znanje kako oblikovati tijelo kariovaskular STA VEC.
+              Ja sam Tarik Budimlija, student fakulteta tjelesnog odgoja i sporta, licencirani privatni trener tenisa sa višegodišnjim iskustvom u radu sa djecom, mladima i odraslima. Tenis treniram više od 15 godina, a posljednje 4 godine radim aktivno kao trener.
               <br /><br />
-              Kroz individualni pristup svakom polazniku, trudim se da časovi tenisa budu zabavni, motivirajući i prilagođeni uzrastu i nivou znanja. Poseban akcenat stavljam na razvoj tehničkih i taktičkih vještina, kao i na izgradnju sportskog duha i samopouzdanja kod djece.
+              Individualnim pristupom tenis postaje zabavan, jer su treninzi posebno krojeni uzrastu i nivou znanja. Poseban akcenat stavljam na razvoj tehničkih i taktičkih vještina, kao i na izgradnju sportskog duha i samopouzdanja kod djece
               <br /><br />
-              Pored rada sa djecom, rado sarađujem i sa odraslim igračima — bilo da želite unaprijediti svoju igru, steći kondiciju ili pronaći kvalitetnog sparing partnera za dinamične i zanimljive mečeve.
+              Pored rada sa djecom, sarađujem i sa odraslim igračima — unapređujući igru, kondiciju i životni stil sa dinamičnim i zanimljivim mečevima.
               <br /><br />
-              Bez obzira da li ste potpuni početnik ili rekreativac sa ambicijom da napredujete, uz stručno vođstvo i podršku, sigurno ćete uživati na terenu.
+              Bez obzira da li ste potpuni početnik ili rekreativac sa željom da napredujete, uz stručno vođstvo i podršku ćete uživati u svakom momentu vašeg razvoja.
               <br /><br />
               Vidimo se na terenu!
             </p>

@@ -3,6 +3,7 @@ import Header from '../components/Header.tsx';
 import Footer from '../components/Footer.tsx';
 import actionBudi from '../assets/3.jpg';
 import coach from '../assets/2.jpg';
+import './HomePage.css';
 
 const HomePage: React.FC = () => {
   return (
@@ -36,7 +37,7 @@ const HomePage: React.FC = () => {
                         </h1>
                         <div className="u-border-3 u-border-palette-2-base u-expanded-width u-line u-line-horizontal u-line-1"></div>
                         <p className="u-text u-text-2">
-                          Za starije rekreativce ili takmičare koji žele unaprijediti igru, održati formu ili jednostavno uživati u kvalitetnom sparingu, nudim profesionalne sparing treninge. Bez obzira da li igrate rekreativno, u klupskim ligama, ili se vraćate na teren nakon pauze — sparing je idealan način da ostanete u ritmu, poradite na specifičnim udarcima i taktičkim elementima igre. Treninge u potpunosti prilagođavam vašim željama — tempo, tip igre, situacijski treninzi ili priprema za mečeve. Ako volite dinamične i izazovne mečeve bez pritiska, ovo je pravi izbor za vas.
+                          Za starije rekreativce ili takmičare koji se žele unaprijediti, održati formu ili jednostavno uživati u kvalitetnoj igri, nudim profesionalne sparing treninge. Igrate rekreativno, u klupskim ligama ili se vraćate na teren nakon pauze — sparing je idealan način da ostanete u ritmu, poradite na specifičnim udarcima i taktičkim elementima igre. Treninge u potpunosti prilagođavam vašim željama — tempo, tip igre, situacijski treninzi ili priprema za mečeve. Ako volite dinamične i uzbudljive mečeve u opuštenoj atmosferi, ovo je pravi izbor za vas.
                         </p>
                         <a
                           href="#"
@@ -59,7 +60,7 @@ const HomePage: React.FC = () => {
                             <h3 className="u-custom-font u-font-oswald u-text u-text-palette-2-base u-text-1">Treninzi za mališane</h3>
                             <div className="u-border-3 u-border-palette-2-base u-expanded-width u-line u-line-horizontal u-line-1"></div>
                             <p className="u-text u-text-default u-text-4">
-                              Kao privatni teniski trener, vjerujem da tenis djeci treba biti zanimljiv, zabavan i podsticajan. Na treninzima radimo na razvoju koordinacije, agilnosti i motoričkih sposobnosti, ali jednako tako njegujemo i važne životne vrijednosti poput discipline, upornosti i sportskog duha. Svakom djetetu pristupam individualno, uvažavajući njegov uzrast i nivo znanja, kako bi trening bio prilagođen njegovim potrebama i ciljevima. Bilo da je riječ o prvim koracima na terenu ili pripremama za takmičenja, pomoći ću vašem djetetu da zavoli tenis i razvije svoj puni potencijal.
+                              Kao privatni teniski trener, vjerujem da tenis djeci treba biti zanimljiv, zabavan i podsticajan. Na treninzima radimo na razvoju koordinacije, agilnosti i motoričkih sposobnosti, ali jednako tako njegujem​​o i važne životne vrijednosti poput discipline, upornosti i sportskog duha. Svakom djetetu pristupam individualno, uvažavajući njegov uzrast i nivo znanja, kako bi trening bio prilagođen njegovim potrebama i ciljevima. Bilo da je riječ o prvim koracima na terenu ili pripremama za takmičenja, pomoći ću vašem djetetu da zavoli tenis i dostigne svoj puni potencijal.
                             </p>
                           </div>
                         </div>
