@@ -1,68 +1,69 @@
 @media (max-width: 768px) {
+
   .u-layout-row {
+    display: flex;
     flex-direction: column !important;
-    align-items: center !important;
-  }
+    align-items: stretch !important;
+    padding: 0 10px 0 20px !important; /* padding: top right bottom left → L = 20px */
+    box-sizing: border-box;
+    }
 
-  .u-layout-col {
+  .u-layout-cell.u-layout-cell-1 {
     width: 100% !important;
     max-width: 100% !important;
-  }
-
-  .u-layout-cell {
-    width: 100% !important;
-    max-width: 100% !important;
-  }
-
-  .u-layout-cell img {
-    max-width: 90% !important;
-    height: auto !important;
-  }
-
-  .u-container-layout {
-    padding: 10px !important;
-  }
-
-  .u-layout-cell-4 {
-    width: 100% !important;
-    max-width: 90% !important;
-    margin: 20px auto 0 auto !important; /* move image a bit more down */
-    padding: 10px !important;
-    background-color: #db545a !important; /* RED — same as u-palette-2-base → you can adjust */
+    margin: 20px 0 0 0 !important;
+    padding: 0 !important;
     box-sizing: border-box !important;
-    border-radius: 8px; /* optional */
+    background-color: #fff !important;
+    border-radius: 8px;
   }
 
-  .u-layout-cell-4 img {
+  .u-container-layout.u-container-layout-1 {
     width: 100% !important;
-    height: auto !important;
-    display: block !important;
-    margin-top: 10px !important; /* push image a bit down */
-    border-radius: 8px; /* optional, makes it look nicer */
-  }
-
-  .u-container-layout-1 {
-    width: 100% !important;
-    max-width: 90% !important;
-    margin: 0 auto !important;
+    max-width: 100% !important;
+    margin: 0 !important;
     padding: 10px !important;
     box-sizing: border-box !important;
   }
 
-  .u-container-layout-2 {
+  .u-container-layout.u-container-layout-2 {
     width: 100% !important;
-    max-width: 90% !important;
-    margin: 20px auto 0 auto !important;
+    max-width: 100% !important;
+    margin: 20px 0 0 0 !important;
     padding: 10px !important;
     background-color: #fff !important;
     box-sizing: border-box !important;
     border-radius: 8px;
   }
-  
-}
 
-@media (max-width: 768px) {
+    .u-layout-cell.u-layout-cell-4 {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 20px 20px 0 20px !important; /* margin: T R B L → RIGHT = 20px */
+        padding: 10px 20px 20px 10px !important; /* padding: T R B L → RIGHT = 20px */
+        background-color: #db545a !important;
+        box-sizing: border-box !important;
+        border-radius: 8px;
+    }
+
+    .u-layout-cell-4 img {
+        max-width: calc(100% - 20px) !important; /* da ne ide preko paddinga */
+        height: auto !important;
+        display: block !important;
+        margin: 30px auto 0 auto !important; /* pomjereno više dole */
+        border-radius: 8px !important;
+        box-sizing: border-box !important; /* KLJUČNO → da padding se poštuje */
+    }
+
+
+
+  .u-btn {
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
   .u-shape-2 {
     display: none !important;
   }
+
 }
