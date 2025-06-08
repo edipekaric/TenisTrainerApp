@@ -56,7 +56,8 @@ const HomePage: React.FC = () => {
                       <div className="u-container-layout u-container-layout-3">
                         <div className="custom-expanded u-color-scheme-u11 u-color-style-multicolor-1 u-container-style u-expanded-width-md u-expanded-width-sm u-group u-shape-rectangle u-white u-group-1">
                           <div className="u-container-layout u-container-layout-4">
-                            <h3 className="u-text u-text-default u-text-3">Treninzi za mališane</h3>
+                            <h3 className="u-custom-font u-font-oswald u-text u-text-palette-2-base u-text-1">Treninzi za mališane</h3>
+                            <div className="u-border-3 u-border-palette-2-base u-expanded-width u-line u-line-horizontal u-line-1"></div>
                             <p className="u-text u-text-default u-text-4">
                               Kao privatni teniski trener, vjerujem da tenis djeci treba biti zanimljiv, zabavan i podsticajan. Na treninzima radimo na razvoju koordinacije, agilnosti i motoričkih sposobnosti, ali jednako tako njegujemo i važne životne vrijednosti poput discipline, upornosti i sportskog duha. Svakom djetetu pristupam individualno, uvažavajući njegov uzrast i nivo znanja, kako bi trening bio prilagođen njegovim potrebama i ciljevima. Bilo da je riječ o prvim koracima na terenu ili pripremama za takmičenja, pomoći ću vašem djetetu da zavoli tenis i razvije svoj puni potencijal.
                             </p>

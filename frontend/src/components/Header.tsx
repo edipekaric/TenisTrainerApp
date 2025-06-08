@@ -1,8 +1,19 @@
-import React from 'react';
+import React, { useState } from 'react';
+import './Header.css';
 import '../styles/nicepage.css';
 import logo from '../assets/logo.png';
 
 const Header: React.FC = () => {
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  const toggleMenu = () => {
+    setMenuOpen(!menuOpen);
+  };
+
+  const closeMenu = () => {
+    setMenuOpen(false);
+  };
+
   return (
     <header
       className="u-clearfix u-header u-header"
@@ -34,27 +45,33 @@ const Header: React.FC = () => {
             display: 'flex',
             alignItems: 'center',
             height: '100%',
+            marginTop: '-8px', // move logo up a bit
           }}
+          onClick={closeMenu}
         >
           <img
             src={logo}
             className="u-logo-image u-logo-image-1"
             alt="Logo"
             style={{
-              maxHeight: '60px', // prevent it from going under header
+              maxHeight: '60px',
               width: 'auto',
             }}
           />
         </a>
 
-        {/* Right: Menu */}
-        <nav
-          className="u-menu u-menu-dropdown u-offcanvas u-menu-1"
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-          }}
+        {/* Mobile menu button */}
+        <button
+          className="mobile-menu-button"
+          onClick={toggleMenu}
         >
+          <span />
+          <span />
+          <span />
+        </button>
+
+        {/* Right: Menu */}
+        <nav className="u-menu u-menu-dropdown u-offcanvas u-menu-1 desktop-menu">
           <div className="u-custom-menu u-nav-container">
             <ul
               className="u-nav u-unstyled u-nav-1"
@@ -66,13 +83,16 @@ const Header: React.FC = () => {
               }}
             >
               <li className="u-nav-item">
-                <a className="u-button-style u-nav-link" href="/">Home</a>
+                <a className="u-button-style u-nav-link" href="/" onClick={closeMenu}>Home</a>
               </li>
               <li className="u-nav-item">
-                <a className="u-button-style u-nav-link" href="/about">About</a>
+                <a className="u-button-style u-nav-link" href="/about" onClick={closeMenu}>About</a>
               </li>
               <li className="u-nav-item">
-                <a className="u-button-style u-nav-link" href="/contact">Contact</a>
+                <a className="u-button-style u-nav-link" href="/contact" onClick={closeMenu}>Contact</a>
+              </li>
+              <li className="u-nav-item">
+                <a className="u-button-style u-nav-link" href="/login" onClick={closeMenu}>Log In</a>
               </li>
             </ul>
           </div>
@@ -83,18 +103,38 @@ const Header: React.FC = () => {
           style={{
             position: 'absolute',
             left: '50%',
-            top: '48%', // slight move up!
+            top: '48%',
             transform: 'translate(-50%, -50%)',
             fontSize: '24px',
             fontWeight: 'bold',
             color: '#000',
             whiteSpace: 'nowrap',
-            pointerEvents: 'none', // so it's not clickable
+            pointerEvents: 'none',
           }}
         >
           Tenis Coach Tarik
         </div>
       </div>
+
+      {/* Mobile dropdown menu */}
+      {menuOpen && (
+        <div className="mobile-menu">
+          <ul>
+            <li>
+              <a href="/" onClick={closeMenu}>Home</a>
+            </li>
+            <li>
+              <a href="/about" onClick={closeMenu}>About</a>
+            </li>
+            <li>
+              <a href="/contact" onClick={closeMenu}>Contact</a>
+            </li>
+            <li>
+              <a href="/login" onClick={closeMenu}>Log In</a>
+            </li>
+          </ul>
+        </div>
+      )}
     </header>
   );
 };
