@@ -36,24 +36,30 @@
     border-radius: 8px;
   }
 
-    .u-layout-cell.u-layout-cell-4 {
-        width: 100% !important;
-        max-width: 100% !important;
-        margin: 20px 20px 0 20px !important; /* margin: T R B L → RIGHT = 20px */
-        padding: 10px 20px 20px 10px !important; /* padding: T R B L → RIGHT = 20px */
-        background-color: #db545a !important;
-        box-sizing: border-box !important;
-        border-radius: 8px;
-    }
+  .u-layout-cell.u-layout-cell-4 {
+    display: block !important;
+    float: none !important;
+    width: auto !important; /* ključ! */
+    max-width: calc(100% - 30px) !important; /* 20px L + 10px R → tačno koliko imaš u .u-layout-row */
+    margin: 20px auto 0 auto !important; /* centrirano */
+    padding: 10px !important;
+    background-color: #db545a !important;
+    box-sizing: border-box !important;
+    border-radius: 8px;
+  }
 
-    .u-layout-cell-4 img {
-        max-width: calc(100% - 20px) !important; /* da ne ide preko paddinga */
-        height: auto !important;
-        display: block !important;
-        margin: 30px auto 0 auto !important; /* pomjereno više dole */
-        border-radius: 8px !important;
-        box-sizing: border-box !important; /* KLJUČNO → da padding se poštuje */
-    }
+
+
+
+  .u-layout-cell-4 img {
+    max-width: 100% !important; /* sad OK */
+    height: auto !important;
+    display: block !important;
+    margin: 30px auto 0 auto !important; /* pomjereno više dole */
+    border-radius: 8px !important;
+    box-sizing: border-box !important;
+  }
+
 
 
 
