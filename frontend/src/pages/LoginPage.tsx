@@ -1,16 +1,36 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
+import { useAuth } from '../context/AuthContext'; // <-- ovo dodaj!
 import '../styles/nicepage.css';
 
 const LoginPage: React.FC = () => {
+  const { login } = useAuth(); // <-- hook za login
+
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState<string | null>(null);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      await login(email, password); // <--- POVEŽI SE S APIJEM
+      setError(null);
+      alert('Login uspješan!');
+      // Možeš ovdje redirect npr. na /dashboard
+    } catch (err) {
+      console.error(err);
+      setError('Login neuspješan. Provjerite email i lozinku.');
+    }
+  };
+
   return (
     <div className="u-body u-xl-mode">
       <Header />
 
       <main
         style={{
-          minHeight: 'calc(100vh - 200px)', // leave space for header and footer
+          minHeight: 'calc(100vh - 200px)',
           display: 'flex',
           justifyContent: 'center',
           alignItems: 'center',
@@ -30,13 +50,15 @@ const LoginPage: React.FC = () => {
         >
           <h2 style={{ marginBottom: '20px' }}>Log In</h2>
 
-          <form>
+          <form onSubmit={handleSubmit}>
             {/* Email */}
             <div style={{ marginBottom: '15px', textAlign: 'left' }}>
               <label style={{ display: 'block', marginBottom: '5px' }}>Email</label>
               <input
                 type="email"
                 placeholder="Email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 style={{
                   width: '100%',
                   padding: '10px',
@@ -52,6 +74,8 @@ const LoginPage: React.FC = () => {
               <input
                 type="password"
                 placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
                 style={{
                   width: '100%',
                   padding: '10px',
@@ -74,6 +98,13 @@ const LoginPage: React.FC = () => {
                 Zaboravljena sifra
               </a>
             </div>
+
+            {/* Error prikaz */}
+            {error && (
+              <div style={{ color: 'red', marginBottom: '15px' }}>
+                {error}
+              </div>
+            )}
 
             {/* Log In Button */}
             <button
