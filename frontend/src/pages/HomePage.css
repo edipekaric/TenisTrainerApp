@@ -1,13 +1,15 @@
 @media (max-width: 768px) {
 
+  /* ROW */
   .u-layout-row {
     display: flex;
     flex-direction: column !important;
     align-items: stretch !important;
     padding: 0 10px 0 20px !important; /* padding: top right bottom left → L = 20px */
     box-sizing: border-box;
-    }
+  }
 
+  /* CONTAINER 1 */
   .u-layout-cell.u-layout-cell-1 {
     width: 100% !important;
     max-width: 100% !important;
@@ -26,6 +28,7 @@
     box-sizing: border-box !important;
   }
 
+  /* CONTAINER 2 */
   .u-container-layout.u-container-layout-2 {
     width: 100% !important;
     max-width: 100% !important;
@@ -36,40 +39,88 @@
     border-radius: 8px;
   }
 
+  /* CONTAINER 3 (TEXT "Treninzi za mališane") */
+  .u-layout-cell.u-layout-cell-3 {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 20px 0 0 0 !important; /* EXACTLY like container 2 */
+    padding: 0 !important;
+    box-sizing: border-box !important;
+  }
+
+  .u-container-layout.u-container-layout-3 {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important; /* REMOVE extra margin */
+    padding: 0 !important; /* critical */
+    background-color: transparent !important;
+    box-sizing: border-box !important;
+    border-radius: 0 !important;
+  }
+
+  /* FINAL override for u-expanded-width on u-group-1 */
+  .u-group.u-group-1.u-expanded-width-md,
+  .u-group.u-group-1.u-expanded-width-sm {
+      width: 100% !important;
+      max-width: 100% !important;
+      margin: 0 !important;
+      padding: 10px !important;
+      background-color: #fff !important;
+      border-radius: 8px !important;
+      box-sizing: border-box !important;
+  }
+
+
+  /* Container 4 (slika) */
   .u-layout-cell.u-layout-cell-4 {
     display: block !important;
     float: none !important;
-    width: auto !important; /* ključ! */
-    max-width: calc(100% - 30px) !important; /* 20px L + 10px R → tačno koliko imaš u .u-layout-row */
-    margin: 20px auto 0 auto !important; /* centrirano */
+    width: auto !important;
+    max-width: calc(100% - 30px) !important;
+    margin: 20px auto 0 auto !important;
     padding: 10px !important;
     background-color: #db545a !important;
     box-sizing: border-box !important;
     border-radius: 8px;
   }
 
-
-
+  .u-container-layout.u-container-layout-4 {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 10px !important; /* match container 2 */
+    box-sizing: border-box !important;
+    background-color: transparent !important;
+    border-radius: 0 !important;
+  }
 
   .u-layout-cell-4 img {
-    max-width: 100% !important; /* sad OK */
+    max-width: 100% !important;
     height: auto !important;
     display: block !important;
-    margin: 30px auto 0 auto !important; /* pomjereno više dole */
+    margin: 30px auto 0 auto !important;
     border-radius: 8px !important;
     box-sizing: border-box !important;
   }
 
-
-
-
+  /* Button fix */
   .u-btn {
     max-width: 100% !important;
     box-sizing: border-box !important;
   }
 
+  /* Hide shape */
   .u-shape-2 {
     display: none !important;
+  }
+
+  /* Neutralize u-align-center on layout-cell-3 if present */
+  .u-layout-cell.u-layout-cell-3.u-align-center,
+  .u-layout-cell.u-layout-cell-3.u-container-align-center {
+    display: block !important;
+    text-align: left !important;
+    align-items: stretch !important;
+    justify-content: flex-start !important;
   }
 
 }
