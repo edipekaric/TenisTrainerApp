@@ -14,12 +14,13 @@ public class JWTTokenProvider {
     private final Key key = Keys.secretKeyFor(SignatureAlgorithm.HS512); // Generates proper key
     private final long jwtExpirationInMs = 604800000; // 7 days
 
-    public String generateToken(String username) {
+    public String generateToken(String username, String role) {
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + jwtExpirationInMs);
 
         return Jwts.builder()
                 .setSubject(username)
+                .claim("role", role) // <-- Add this line
                 .setIssuedAt(now)
                 .setExpiration(expiryDate)
                 .signWith(key)

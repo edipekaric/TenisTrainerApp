@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import { login as apiLogin, logout as apiLogout, getToken } from '../api/authApi';
+import axios from 'axios';
 
 interface AuthContextType {
   isAuthenticated: boolean;

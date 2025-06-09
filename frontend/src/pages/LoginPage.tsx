@@ -3,6 +3,9 @@ import Header from '../components/Header';
 import Footer from '../components/Footer';
 import { useAuth } from '../context/AuthContext'; // <-- ovo dodaj!
 import '../styles/nicepage.css';
+import { getUserRole } from '../utils/jwtUtils';
+import { useNavigate } from 'react-router-dom'; // for redirect
+
 
 const LoginPage: React.FC = () => {
   const { login } = useAuth(); // <-- hook za login
@@ -11,18 +14,32 @@ const LoginPage: React.FC = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
 
+  const navigate = useNavigate(); // add this line at top of component
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await login(email, password); // <--- POVEŽI SE S APIJEM
+      await login(email, password);
       setError(null);
-      alert('Login uspješan!');
-      // Možeš ovdje redirect npr. na /dashboard
+
+      // Now check role from token:
+      const role = getUserRole();
+
+      if (role === 'ADMIN') {
+        navigate('/admin-dash');
+      } else if (role === 'USER') {
+        navigate('/user-dash');
+      } else {
+        console.error("Unknown role:", role);
+        navigate('/'); // fallback
+      }
+
     } catch (err) {
       console.error(err);
       setError('Login neuspješan. Provjerite email i lozinku.');
     }
   };
+
 
   return (
     <div className="u-body u-xl-mode">

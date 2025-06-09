@@ -41,24 +41,29 @@ public class App {  // <--- This was missing!
         // JWT provider instance
         JWTTokenProvider tokenProvider = new JWTTokenProvider();
 
-        // LOGIN endpoint
+        // TEST Protected endpoint
+        app.get("/api/protected/hello", ctx -> {
+            String username = ctx.attribute("username");
+            ctx.result("Hello, " + username + "! You have accessed a protected endpoint.");
+        });
 
+        // LOGIN endpoint
         app.post("/api/auth/login", ctx -> {
             LoginDto loginDto = ctx.bodyAsClass(LoginDto.class);
 
             try (Connection conn = Db.getConnection()) {
                 // PREPARED STATEMENT — safe from SQL injection
-                String sql = "SELECT password FROM users WHERE email = ?";
+                String sql = "SELECT password, role FROM users WHERE email = ?";
                 PreparedStatement stmt = conn.prepareStatement(sql);
-                stmt.setString(1, loginDto.getUsername());
+                stmt.setString(1, loginDto.getEmail());
                 ResultSet rs = stmt.executeQuery();
 
                 if (rs.next()) {
                     String storedPassword = rs.getString("password");
+                    String role = rs.getString("role");
 
-                    // For now simple string comparison, later we add password hashing (bcrypt)
                     if (storedPassword.equals(loginDto.getPassword())) {
-                        String token = tokenProvider.generateToken(loginDto.getUsername());
+                        String token = tokenProvider.generateToken(loginDto.getEmail(), role); // <-- pass role!
                         ctx.json(new JWTTokenDto(token));
                     } else {
                         ctx.status(401).result("Invalid password");
@@ -73,9 +78,25 @@ public class App {  // <--- This was missing!
             }
         });
 
+        app.before("/api/protected/*", ctx -> {
+            String header = ctx.header("Authorization");
 
+            if (header == null || !header.startsWith("Bearer ")) {
+                ctx.status(401).result("Missing or invalid Authorization header");
+                return;
+            }
 
-        
+            String token = header.substring(7);
+
+            if (!tokenProvider.validateToken(token)) {
+                ctx.status(401).result("Invalid token");
+                return;
+            }
+
+            // Optional: extract username/email from token and store it in ctx
+            String username = tokenProvider.getUsernameFromJWT(token);
+            ctx.attribute("username", username); // You can access it in handlers later
+        });
 
         System.out.println("✅ Backend is ready!");
     }

@@ -6,8 +6,8 @@ interface JWTResponse {
   token: string;
 }
 
-export async function login(username: string, password: string): Promise<string> {
-  const response = await axios.post<JWTResponse>(`${API_URL}/login`, { username, password });
+export async function login(email: string, password: string): Promise<string> {
+  const response = await axios.post<JWTResponse>(`${API_URL}/login`, { email, password });
   const token = response.data.token;
   localStorage.setItem('jwtToken', token);
   axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
