@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import AdminHeaderBar from '../components/AdminHeaderBar';
 import { getAllUsers } from '../api/userApi';
-import { createTransaction } from '../api/transactionApi';
+import { createTransaction, getUserTransactions } from '../api/transactionApi';
 
 interface User {
   id: number;
@@ -11,6 +11,16 @@ interface User {
   phone?: string;
   balance?: number;
   role: string;
+}
+
+interface Transaction {
+  id: number;
+  user_id: number;
+  amount: number;
+  transaction_type: 'ADD' | 'SUBTRACT';
+  description: string;
+  created_at?: string;
+  user_name?: string;
 }
 
 const AdminTransaction: React.FC = () => {
@@ -23,6 +33,8 @@ const AdminTransaction: React.FC = () => {
   const [errors, setErrors] = useState<string[]>([]);
   const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [userTransactions, setUserTransactions] = useState<Transaction[]>([]);
+  const [loadingTransactions, setLoadingTransactions] = useState(false);
 
   useEffect(() => {
     loadUsers();
@@ -45,11 +57,30 @@ const AdminTransaction: React.FC = () => {
     }
   };
 
+  const loadUserTransactions = async (userId: number) => {
+    setLoadingTransactions(true);
+    try {
+      const transactions = await getUserTransactions(userId);
+      setUserTransactions(transactions);
+    } catch (error) {
+      console.error('Error loading user transactions:', error);
+      setUserTransactions([]);
+    } finally {
+      setLoadingTransactions(false);
+    }
+  };
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     
     if (name === 'selectedUserId') {
       setSelectedUserId(value);
+      // Load transactions when user is selected
+      if (value) {
+        loadUserTransactions(parseInt(value));
+      } else {
+        setUserTransactions([]);
+      }
     } else if (name === 'transactionType') {
       setTransactionType(value as 'ADD' | 'SUBTRACT');
     } else if (name === 'amount') {
@@ -120,6 +151,11 @@ const AdminTransaction: React.FC = () => {
       
       // Reload users to update balances
       await loadUsers();
+      
+      // Reload user transactions if a user is selected
+      if (selectedUserId) {
+        await loadUserTransactions(parseInt(selectedUserId));
+      }
 
       // Clear success message after 5 seconds
       setTimeout(() => setSuccess(false), 5000);
@@ -143,6 +179,7 @@ const AdminTransaction: React.FC = () => {
     setDescription('');
     setErrors([]);
     setSuccess(false);
+    setUserTransactions([]);
   };
 
   const getSelectedUser = (): User | null => {
@@ -448,6 +485,135 @@ const AdminTransaction: React.FC = () => {
             </div>
           </form>
         </div>
+
+        {/* User Transaction History */}
+        {selectedUser && (
+          <div style={{
+            backgroundColor: '#fff',
+            padding: '25px',
+            borderRadius: '10px',
+            border: '1px solid #dee2e6',
+            boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+            marginBottom: '20px'
+          }}>
+            <h3 style={{ color: '#2c3e50', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+              📊 Transaction History for {selectedUser.first_name} {selectedUser.last_name}
+            </h3>
+            
+            {loadingTransactions ? (
+              <div style={{ textAlign: 'center', padding: '20px', color: '#7f8c8d' }}>
+                Loading transaction history...
+              </div>
+            ) : userTransactions.length > 0 ? (
+              <div>
+                <div style={{ marginBottom: '15px', padding: '10px', backgroundColor: '#f8f9fa', borderRadius: '5px' }}>
+                  <strong>Total Transactions: {userTransactions.length}</strong>
+                </div>
+                
+                <div style={{ maxHeight: '300px', overflowY: 'auto', border: '1px solid #dee2e6', borderRadius: '5px' }}>
+                  <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                    <thead style={{ backgroundColor: '#f8f9fa', position: 'sticky', top: 0 }}>
+                      <tr>
+                        <th style={{ 
+                          padding: '12px', 
+                          textAlign: 'left', 
+                          borderBottom: '1px solid #dee2e6',
+                          fontWeight: 'bold',
+                          color: '#2c3e50',
+                          fontSize: '14px'
+                        }}>
+                          ID
+                        </th>
+                        <th style={{ 
+                          padding: '12px', 
+                          textAlign: 'left', 
+                          borderBottom: '1px solid #dee2e6',
+                          fontWeight: 'bold',
+                          color: '#2c3e50',
+                          fontSize: '14px'
+                        }}>
+                          Type
+                        </th>
+                        <th style={{ 
+                          padding: '12px', 
+                          textAlign: 'left', 
+                          borderBottom: '1px solid #dee2e6',
+                          fontWeight: 'bold',
+                          color: '#2c3e50',
+                          fontSize: '14px'
+                        }}>
+                          Amount
+                        </th>
+                        <th style={{ 
+                          padding: '12px', 
+                          textAlign: 'left', 
+                          borderBottom: '1px solid #dee2e6',
+                          fontWeight: 'bold',
+                          color: '#2c3e50',
+                          fontSize: '14px'
+                        }}>
+                          Description
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {userTransactions.map((transaction, index) => (
+                        <tr key={transaction.id} style={{ 
+                          backgroundColor: index % 2 === 0 ? '#fff' : '#f8f9fa',
+                          borderBottom: '1px solid #dee2e6'
+                        }}>
+                          <td style={{ 
+                            padding: '10px 12px', 
+                            fontSize: '13px',
+                            color: '#7f8c8d'
+                          }}>
+                            #{transaction.id}
+                          </td>
+                          <td style={{ padding: '10px 12px' }}>
+                            <span style={{
+                              padding: '4px 8px',
+                              borderRadius: '12px',
+                              fontSize: '12px',
+                              fontWeight: 'bold',
+                              color: '#fff',
+                              backgroundColor: transaction.transaction_type === 'ADD' ? '#27ae60' : '#e74c3c'
+                            }}>
+                              {transaction.transaction_type === 'ADD' ? '➕ ADD' : '➖ SUBTRACT'}
+                            </span>
+                          </td>
+                          <td style={{ 
+                            padding: '10px 12px',
+                            fontWeight: 'bold',
+                            color: transaction.transaction_type === 'ADD' ? '#27ae60' : '#e74c3c'
+                          }}>
+                            {transaction.transaction_type === 'ADD' ? '+' : '-'}${transaction.amount.toFixed(2)}
+                          </td>
+                          <td style={{ 
+                            padding: '10px 12px',
+                            fontSize: '13px',
+                            color: '#2c3e50'
+                          }}>
+                            {transaction.description}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            ) : (
+              <div style={{ 
+                textAlign: 'center', 
+                padding: '30px',
+                color: '#7f8c8d',
+                fontStyle: 'italic'
+              }}>
+                <div style={{ fontSize: '48px', marginBottom: '10px' }}>📋</div>
+                No transactions found for this user.
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Help Text */}
         <div style={{
