@@ -3,6 +3,10 @@ package com.yourapp;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import com.yourapp.Dto.JWTTokenDto;
 import com.yourapp.Dto.LoginDto;
@@ -97,6 +101,197 @@ public class App {  // <--- This was missing!
             String username = tokenProvider.getUsernameFromJWT(token);
             ctx.attribute("username", username); // You can access it in handlers later
         });
+
+        app.before("/api/time-slots/*", ctx -> {
+            String header = ctx.header("Authorization");
+
+            if (header == null || !header.startsWith("Bearer ")) {
+                ctx.status(401).result("Missing or invalid Authorization header");
+                return;
+            }
+
+            String token = header.substring(7);
+
+            if (!tokenProvider.validateToken(token)) {
+                ctx.status(401).result("Invalid token");
+                return;
+            }
+
+            String username = tokenProvider.getUsernameFromJWT(token);
+            ctx.attribute("username", username);
+        });
+
+        // GET my booked time slots
+        app.get("/api/time-slots/my", ctx -> {
+            String username = ctx.attribute("username");
+            if (username == null) {
+                ctx.status(401).result("Unauthorized");
+                return;
+            }
+
+            try (Connection conn = Db.getConnection()) {
+                String sql = "SELECT ts.id, ts.date, ts.start_time, ts.end_time, ts.is_booked, ts.booked_by " +
+                            "FROM time_slots ts " +
+                            "JOIN users u ON ts.booked_by = u.id " +
+                            "WHERE u.email = ? " +
+                            "ORDER BY ts.date ASC, ts.start_time ASC";
+
+
+
+                PreparedStatement stmt = conn.prepareStatement(sql);
+                stmt.setString(1, username);
+                ResultSet rs = stmt.executeQuery();
+
+                List<Map<String, Object>> slots = new ArrayList<>();
+
+                while (rs.next()) {
+                    Map<String, Object> slot = new HashMap<>();
+                    slot.put("id", rs.getInt("id"));
+                    slot.put("date", rs.getDate("date").toString());
+                    slot.put("start_time", rs.getString("start_time"));
+                    slot.put("end_time", rs.getString("end_time"));
+                    slot.put("is_booked", rs.getBoolean("is_booked"));
+                    slot.put("booked_by", rs.getObject("booked_by"));
+                    slots.add(slot);
+                }
+
+                ctx.json(slots);
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                ctx.status(500).result("Server error: " + e.getMessage());
+            }
+        });
+
+        // GET free time slots for next X days
+        app.get("/api/time-slots/free", ctx -> {
+            String daysParam = ctx.queryParam("days");
+            int days = daysParam != null ? Integer.parseInt(daysParam) : 7;
+
+            try (Connection conn = Db.getConnection()) {
+                String sql = "SELECT id, date, start_time, end_time, is_booked, booked_by " +
+                            "FROM time_slots " +
+                            "WHERE is_booked = false " +
+                            "AND date >= CURDATE() " +
+                            "AND date <= DATE_ADD(CURDATE(), INTERVAL ? DAY) " +
+                            "ORDER BY date ASC, start_time ASC";
+
+                PreparedStatement stmt = conn.prepareStatement(sql);
+                stmt.setInt(1, days);
+                ResultSet rs = stmt.executeQuery();
+
+                List<Map<String, Object>> slots = new ArrayList<>();
+
+                while (rs.next()) {
+                    Map<String, Object> slot = new HashMap<>();
+                    slot.put("id", rs.getInt("id"));
+                    slot.put("date", rs.getDate("date").toString());
+                    slot.put("start_time", rs.getString("start_time"));
+                    slot.put("end_time", rs.getString("end_time"));
+                    slot.put("is_booked", rs.getBoolean("is_booked"));
+                    slot.put("booked_by", rs.getObject("booked_by"));
+                    slots.add(slot);
+                }
+
+                ctx.json(slots);
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                ctx.status(500).result("Server error: " + e.getMessage());
+            }
+        });
+
+        // POST Add new time slot (Admin)
+        app.post("/api/time-slots", ctx -> {
+            String username = ctx.attribute("username");
+            if (username == null) {
+                ctx.status(401).result("Unauthorized");
+                return;
+            }
+
+            try (Connection conn = Db.getConnection()) {
+                // Check if user is ADMIN
+                String roleSql = "SELECT role FROM users WHERE email = ?";
+                PreparedStatement roleStmt = conn.prepareStatement(roleSql);
+                roleStmt.setString(1, username);
+                ResultSet roleRs = roleStmt.executeQuery();
+
+                if (!roleRs.next() || !"ADMIN".equals(roleRs.getString("role"))) {
+                    ctx.status(403).result("Forbidden: Admins only");
+                    return;
+                }
+
+                // Read body
+                Map<String, Object> body = ctx.bodyAsClass(Map.class);
+                String date = (String) body.get("date");
+                String start_time = (String) body.get("start_time");
+                String end_time = (String) body.get("end_time");
+
+
+                String insertSql = "INSERT INTO time_slots (date, start_time, end_time, is_booked, booked_by) " +
+                                "VALUES (?, ?, ?, false, NULL)";
+
+                PreparedStatement insertStmt = conn.prepareStatement(insertSql);
+                insertStmt.setString(1, date);
+                insertStmt.setString(2, start_time);
+                insertStmt.setString(3, end_time);
+                insertStmt.executeUpdate();
+
+                ctx.result("Time slot added");
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                ctx.status(500).result("Server error: " + e.getMessage());
+            }
+        });
+
+
+
+        // POST Book time slot (User books a slot)
+        app.post("/api/time-slots/book/{id}", ctx -> {
+            String username = ctx.attribute("username");
+            if (username == null) {
+                ctx.status(401).result("Unauthorized");
+                return;
+            }
+
+            int slotId = Integer.parseInt(ctx.pathParam("id"));
+
+            try (Connection conn = Db.getConnection()) {
+                // Get user ID
+                String userIdSql = "SELECT id FROM users WHERE email = ?";
+                PreparedStatement userStmt = conn.prepareStatement(userIdSql);
+                userStmt.setString(1, username);
+                ResultSet userRs = userStmt.executeQuery();
+
+                if (!userRs.next()) {
+                    ctx.status(500).result("User not found");
+                    return;
+                }
+
+                int userId = userRs.getInt("id");
+
+                // Try to book slot
+                String updateSql = "UPDATE time_slots SET is_booked = true, booked_by = ? WHERE id = ? AND is_booked = false";
+                PreparedStatement updateStmt = conn.prepareStatement(updateSql);
+                updateStmt.setInt(1, userId);
+                updateStmt.setInt(2, slotId);
+                int updatedRows = updateStmt.executeUpdate();
+
+                if (updatedRows > 0) {
+                    ctx.result("Slot booked successfully");
+                } else {
+                    ctx.status(400).result("Slot already booked or does not exist");
+                }
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                ctx.status(500).result("Server error: " + e.getMessage());
+            }
+        });
+
+
+
 
         System.out.println("✅ Backend is ready!");
     }

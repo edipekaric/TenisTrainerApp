@@ -13,18 +13,33 @@ export interface TimeSlot {
 const API_URL = 'http://localhost:8080/api/time-slots';
 
 export async function getMyTimeSlots(): Promise<TimeSlot[]> {
-  const response = await axios.get<TimeSlot[]>(`${API_URL}/my`);
+  const token = localStorage.getItem('jwtToken');
+  const response = await axios.get<TimeSlot[]>(`${API_URL}/my`, {
+    headers: {
+      'Authorization': `Bearer ${token}`
+    }
+  });
   return response.data;
 }
 
 export async function getFreeTimeSlots(days = 7): Promise<TimeSlot[]> {
-  const response = await axios.get<TimeSlot[]>(`${API_URL}/free?days=${days}`);
+  const token = localStorage.getItem('jwtToken');
+  const response = await axios.get<TimeSlot[]>(`${API_URL}/free?days=${days}`, {
+    headers: {
+      'Authorization': `Bearer ${token}`
+    }
+  });
   return response.data;
 }
 
 export async function addTimeSlot(date: string, start_time: string, end_time: string) {
+  const token = localStorage.getItem('jwtToken');
   const response = await axios.post(API_URL, {
     date, start_time, end_time
+  }, {
+    headers: {
+      'Authorization': `Bearer ${token}`
+    }
   });
   return response.data;
 }
