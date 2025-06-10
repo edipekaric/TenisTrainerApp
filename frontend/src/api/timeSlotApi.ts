@@ -8,6 +8,11 @@ export interface TimeSlot {
   end_time: string;
   is_booked: boolean;
   booked_by: number | null;
+  booked_by_user?: {
+    first_name: string;
+    last_name: string;
+    email: string;
+  } | null;
 }
 
 const API_URL = 'http://localhost:8080/api/time-slots';
@@ -60,4 +65,14 @@ export async function deleteTimeSlot(slotId: number): Promise<void> {
       'Authorization': `Bearer ${token}`
     }
   });
+}
+
+export async function getAllTimeSlots(days = 7): Promise<TimeSlot[]> {
+  const token = localStorage.getItem('jwtToken');
+  const response = await axios.get<TimeSlot[]>(`${API_URL}/all?days=${days}`, {
+    headers: {
+      'Authorization': `Bearer ${token}`
+    }
+  });
+  return response.data;
 }

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import HeaderBar from '../components/HeaderBar';
-import { getMyTimeSlots, getFreeTimeSlots, addTimeSlot, deleteTimeSlot } from '../api/timeSlotApi';
+import AdminHeaderBar from '../components/AdminHeaderBar';
+import { getMyTimeSlots, getAllTimeSlots, addTimeSlot, deleteTimeSlot } from '../api/timeSlotApi';
 
 interface TimeSlot {
   id: number;
@@ -9,6 +9,11 @@ interface TimeSlot {
   end_time: string;
   is_booked: boolean;
   booked_by: number | null;
+  booked_by_user?: {
+    first_name: string;
+    last_name: string;
+    email: string;
+  } | null;
 }
 
 interface DateInfo {
@@ -65,12 +70,12 @@ const AdminDash: React.FC = () => {
   const loadSlots = async () => {
     setLoading(true);
     try {
-      const [my, free] = await Promise.all([
+      const [my, all] = await Promise.all([
         getMyTimeSlots(),
-        getFreeTimeSlots(7)
+        getAllTimeSlots(7) // Changed from getFreeTimeSlots to getAllTimeSlots
       ]);
       setMySlots(my);
-      setAllSlots(free);
+      setAllSlots(all);
     } catch (error) {
       console.error('Error loading slots:', error);
     } finally {
@@ -159,7 +164,7 @@ const AdminDash: React.FC = () => {
 
   return (
     <>
-      <HeaderBar />
+      <AdminHeaderBar />
       <main style={{ padding: '20px', maxWidth: '1200px', margin: '0 auto' }}>
         
         {/* Admin Header with Add Button */}
@@ -355,6 +360,30 @@ const AdminDash: React.FC = () => {
                     }}>
                       {slot.is_booked ? '🔴 BOOKED' : '🟢 AVAILABLE'}
                     </div>
+                    
+                    {/* Show booked by user info if available */}
+                    {slot.is_booked && slot.booked_by_user && (
+                      <div style={{ 
+                        fontSize: '11px', 
+                        color: '#34495e',
+                        marginBottom: '8px',
+                        padding: '5px',
+                        backgroundColor: '#f8f9fa',
+                        borderRadius: '4px',
+                        border: '1px solid #dee2e6'
+                      }}>
+                        <div style={{ fontWeight: 'bold', marginBottom: '2px' }}>
+                          Booked by:
+                        </div>
+                        <div>
+                          {slot.booked_by_user.first_name} {slot.booked_by_user.last_name}
+                        </div>
+                        <div style={{ color: '#7f8c8d', fontSize: '10px' }}>
+                          {slot.booked_by_user.email}
+                        </div>
+                      </div>
+                    )}
+                    
                     <div style={{ fontSize: '11px', color: '#7f8c8d', marginBottom: '10px' }}>
                       Slot ID: {slot.id}
                     </div>

@@ -22,3 +22,20 @@ export function logout() {
 export function getToken(): string | null {
   return localStorage.getItem('jwtToken');
 }
+
+export async function adminRegisterUser(userData: {
+  first_name: string;
+  last_name: string;
+  email: string;
+  password: string;
+  phone?: string;
+  role: 'USER' | 'ADMIN';
+  balance: number;
+}): Promise<void> {
+  const token = localStorage.getItem('jwtToken');
+  await axios.post(`${API_URL}/admin/register`, userData, {
+    headers: {
+      'Authorization': `Bearer ${token}`
+    }
+  });
+}

@@ -1,10 +1,10 @@
-// src/components/HeaderBar.tsx
+// src/components/UserHeaderBar.tsx
 
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { logout } from '../api/authApi';
 
-const HeaderBar: React.FC = () => {
+const UserHeaderBar: React.FC = () => {
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -13,21 +13,12 @@ const HeaderBar: React.FC = () => {
   };
 
   const handleHomeClick = () => {
-    const userRole = localStorage.getItem('userRole');
-    if (userRole === 'ADMIN') {
-      navigate('/admin');
-    } else {
-      navigate('/dashboard');
-    }
+    navigate('/user-dash');
   };
 
-  const handleManageUsersClick = () => {
-    navigate('/admin/users');
+  const handleUserProfileClick = () => {
+    navigate('/user-profile');
   };
-
-  // Get user role to determine what to show
-  const userRole = localStorage.getItem('userRole');
-  const isAdmin = userRole === 'ADMIN';
 
   return (
     <header style={{
@@ -52,19 +43,13 @@ const HeaderBar: React.FC = () => {
       <div>
         {/* Home Button */}
         <button onClick={handleHomeClick} style={buttonStyle}>
-          🏠 Home
+          🏠 Dashboard
         </button>
         
-        {/* Conditional Profile/All Users Button */}
-        {isAdmin ? (
-          <button onClick={handleManageUsersClick} style={{...buttonStyle, backgroundColor: '#e74c3c'}}>
-            👥 All Users
-          </button>
-        ) : (
-          <button onClick={() => navigate('/user-profile')} style={buttonStyle}>
-            👤 User Profile
-          </button>
-        )}
+        {/* User Profile Button */}
+        <button onClick={handleUserProfileClick} style={buttonStyle}>
+          👤 User Profile
+        </button>
         
         <button onClick={handleLogout} style={{...buttonStyle, backgroundColor: '#e74c3c'}}>
           🚪 Log Off
@@ -87,4 +72,4 @@ const buttonStyle = {
   transition: 'background-color 0.2s ease',
 };
 
-export default HeaderBar;
+export default UserHeaderBar;

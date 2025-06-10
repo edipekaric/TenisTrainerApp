@@ -1,10 +1,10 @@
-// src/components/HeaderBar.tsx
+// src/components/AdminHeaderBar.tsx
 
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { logout } from '../api/authApi';
 
-const HeaderBar: React.FC = () => {
+const AdminHeaderBar: React.FC = () => {
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -13,21 +13,16 @@ const HeaderBar: React.FC = () => {
   };
 
   const handleHomeClick = () => {
-    const userRole = localStorage.getItem('userRole');
-    if (userRole === 'ADMIN') {
-      navigate('/admin');
-    } else {
-      navigate('/dashboard');
-    }
+    navigate('/admin-dash');
   };
 
-  const handleManageUsersClick = () => {
+  const handleAllUsersClick = () => {
     navigate('/admin/users');
   };
 
-  // Get user role to determine what to show
-  const userRole = localStorage.getItem('userRole');
-  const isAdmin = userRole === 'ADMIN';
+  const handleRegisterUserClick = () => {
+    navigate('/admin/register-user');
+  };
 
   return (
     <header style={{
@@ -47,24 +42,23 @@ const HeaderBar: React.FC = () => {
         onClick={handleHomeClick}
       >
         <img src="/logo.jpg" alt="Logo" style={{ height: '40px', marginRight: '15px' }} />
-        <h2>Booking App</h2>
+        <h2>Booking App - Admin</h2>
       </div>
       <div>
         {/* Home Button */}
         <button onClick={handleHomeClick} style={buttonStyle}>
-          🏠 Home
+          🏠 Admin Dashboard
         </button>
         
-        {/* Conditional Profile/All Users Button */}
-        {isAdmin ? (
-          <button onClick={handleManageUsersClick} style={{...buttonStyle, backgroundColor: '#e74c3c'}}>
-            👥 All Users
-          </button>
-        ) : (
-          <button onClick={() => navigate('/user-profile')} style={buttonStyle}>
-            👤 User Profile
-          </button>
-        )}
+        {/* Register User Button */}
+        <button onClick={handleRegisterUserClick} style={{...buttonStyle, backgroundColor: '#f39c12'}}>
+          ➕ Register User
+        </button>
+        
+        {/* All Users Button */}
+        <button onClick={handleAllUsersClick} style={{...buttonStyle, backgroundColor: '#e74c3c'}}>
+          👥 All Users
+        </button>
         
         <button onClick={handleLogout} style={{...buttonStyle, backgroundColor: '#e74c3c'}}>
           🚪 Log Off
@@ -87,4 +81,4 @@ const buttonStyle = {
   transition: 'background-color 0.2s ease',
 };
 
-export default HeaderBar;
+export default AdminHeaderBar;
