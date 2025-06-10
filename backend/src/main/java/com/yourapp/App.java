@@ -707,6 +707,84 @@ public class App {  // <--- This was missing!
             }
         });
 
+        // PUT admin reset user password (Admin only)
+        app.put("/api/users/admin/reset-password", ctx -> {
+            String username = ctx.attribute("username");
+            if (username == null) {
+                ctx.status(401).result("Unauthorized");
+                return;
+            }
+
+            try (Connection conn = Db.getConnection()) {
+                // Check if user is ADMIN
+                String roleSql = "SELECT role FROM users WHERE email = ?";
+                PreparedStatement roleStmt = conn.prepareStatement(roleSql);
+                roleStmt.setString(1, username);
+                ResultSet roleRs = roleStmt.executeQuery();
+
+                if (!roleRs.next() || !"ADMIN".equals(roleRs.getString("role"))) {
+                    ctx.status(403).result("Forbidden: Admins only");
+                    return;
+                }
+
+                // Read body
+                Map<String, Object> body = ctx.bodyAsClass(Map.class);
+                Object userIdObj = body.get("user_id");
+                String newPassword = (String) body.get("new_password");
+
+                if (userIdObj == null || newPassword == null) {
+                    ctx.status(400).result("Missing required fields");
+                    return;
+                }
+
+                int userId;
+                try {
+                    userId = Integer.parseInt(userIdObj.toString());
+                } catch (NumberFormatException e) {
+                    ctx.status(400).result("Invalid user ID format");
+                    return;
+                }
+
+                // Validate password length
+                if (newPassword.length() < 6) {
+                    ctx.status(400).result("Password must be at least 6 characters long");
+                    return;
+                }
+
+                // Check if user exists
+                String checkUserSql = "SELECT id FROM users WHERE id = ?";
+                PreparedStatement checkStmt = conn.prepareStatement(checkUserSql);
+                checkStmt.setInt(1, userId);
+                ResultSet checkRs = checkStmt.executeQuery();
+
+                if (!checkRs.next()) {
+                    ctx.status(404).result("User not found");
+                    return;
+                }
+
+                // Hash password (in production, use BCrypt or similar)
+                String hashedPassword = newPassword; // In production, use proper password hashing
+
+                // Update user password
+                String updateSql = "UPDATE users SET password = ? WHERE id = ?";
+                PreparedStatement updateStmt = conn.prepareStatement(updateSql);
+                updateStmt.setString(1, hashedPassword);
+                updateStmt.setInt(2, userId);
+                
+                int updatedRows = updateStmt.executeUpdate();
+
+                if (updatedRows > 0) {
+                    ctx.result("Password reset successfully");
+                } else {
+                    ctx.status(500).result("Failed to reset password");
+                }
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                ctx.status(500).result("Server error: " + e.getMessage());
+            }
+        });
+
         // Auth middleware for transaction endpoints
         app.before("/api/transactions/*", ctx -> {
             String header = ctx.header("Authorization");

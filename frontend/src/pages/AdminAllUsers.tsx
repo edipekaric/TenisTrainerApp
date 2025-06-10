@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import AdminHeaderBar from '../components/AdminHeaderBar';
-import { getAllUsers } from '../api/userApi';
+import { getAllUsers, resetUserPassword } from '../api/userApi';
 
 interface User {
   id: number;
@@ -18,6 +18,12 @@ const AdminAllUsers: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [roleFilter, setRoleFilter] = useState<string>('ALL');
+  const [resetPasswordModal, setResetPasswordModal] = useState<{
+    show: boolean;
+    user: User | null;
+  }>({ show: false, user: null });
+  const [newPassword, setNewPassword] = useState('');
+  const [isResetting, setIsResetting] = useState(false);
 
   useEffect(() => {
     loadUsers();
@@ -34,6 +40,45 @@ const AdminAllUsers: React.FC = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleResetPassword = (user: User) => {
+    setResetPasswordModal({ show: true, user });
+    setNewPassword('');
+  };
+
+  const handlePasswordSubmit = async () => {
+    if (!resetPasswordModal.user || !newPassword.trim()) {
+      alert('Please enter a new password');
+      return;
+    }
+
+    if (newPassword.length < 6) {
+      alert('Password must be at least 6 characters long');
+      return;
+    }
+
+    setIsResetting(true);
+    try {
+      await resetUserPassword(resetPasswordModal.user.id, newPassword);
+      alert(`Password for ${resetPasswordModal.user.first_name} ${resetPasswordModal.user.last_name} has been reset successfully!`);
+      setResetPasswordModal({ show: false, user: null });
+      setNewPassword('');
+    } catch (error: any) {
+      console.error('Error resetting password:', error);
+      if (error.response?.data) {
+        alert(`Failed to reset password: ${error.response.data}`);
+      } else {
+        alert('Failed to reset password. Please try again.');
+      }
+    } finally {
+      setIsResetting(false);
+    }
+  };
+
+  const handleModalClose = () => {
+    setResetPasswordModal({ show: false, user: null });
+    setNewPassword('');
   };
 
   // Filter users based on search term and role
@@ -264,7 +309,7 @@ const AdminAllUsers: React.FC = () => {
                       fontWeight: 'bold',
                       color: '#2c3e50'
                     }}>
-                      Created
+                      Reset Password
                     </th>
                   </tr>
                 </thead>
@@ -334,11 +379,30 @@ const AdminAllUsers: React.FC = () => {
                       </td>
                       <td style={{ 
                         padding: '15px', 
-                        borderBottom: '1px solid #dee2e6',
-                        color: '#7f8c8d',
-                        fontSize: '14px'
+                        borderBottom: '1px solid #dee2e6'
                       }}>
-                        {user.created_at ? new Date(user.created_at).toLocaleDateString() : 'N/A'}
+                        <button
+                          onClick={() => handleResetPassword(user)}
+                          style={{
+                            padding: '6px 12px',
+                            backgroundColor: '#f39c12',
+                            color: '#fff',
+                            border: 'none',
+                            borderRadius: '4px',
+                            cursor: 'pointer',
+                            fontSize: '12px',
+                            fontWeight: 'bold',
+                            transition: 'background-color 0.2s ease'
+                          }}
+                          onMouseOver={(e) => {
+                            e.currentTarget.style.backgroundColor = '#e67e22';
+                          }}
+                          onMouseOut={(e) => {
+                            e.currentTarget.style.backgroundColor = '#f39c12';
+                          }}
+                        >
+                          🔑 Reset Password
+                        </button>
                       </td>
                     </tr>
                   ))}
@@ -346,6 +410,116 @@ const AdminAllUsers: React.FC = () => {
               </table>
             </div>
           )}
+
+        {/* Reset Password Modal */}
+        {resetPasswordModal.show && (
+          <div style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            zIndex: 1000
+          }}>
+            <div style={{
+              backgroundColor: '#fff',
+              padding: '30px',
+              borderRadius: '10px',
+              boxShadow: '0 10px 25px rgba(0,0,0,0.3)',
+              minWidth: '400px',
+              maxWidth: '500px'
+            }}>
+              <h3 style={{ color: '#2c3e50', marginBottom: '20px', textAlign: 'center' }}>
+                🔑 Reset Password
+              </h3>
+              
+              {resetPasswordModal.user && (
+                <div style={{
+                  marginBottom: '20px',
+                  padding: '15px',
+                  backgroundColor: '#f8f9fa',
+                  borderRadius: '8px',
+                  border: '1px solid #dee2e6'
+                }}>
+                  <div style={{ fontWeight: 'bold', color: '#2c3e50', marginBottom: '5px' }}>
+                    Resetting password for:
+                  </div>
+                  <div style={{ color: '#34495e' }}>
+                    {resetPasswordModal.user.first_name} {resetPasswordModal.user.last_name}
+                  </div>
+                  <div style={{ color: '#7f8c8d', fontSize: '14px' }}>
+                    {resetPasswordModal.user.email}
+                  </div>
+                </div>
+              )}
+
+              <div style={{ marginBottom: '20px' }}>
+                <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold', color: '#2c3e50' }}>
+                  New Password:
+                </label>
+                <input
+                  type="password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '12px',
+                    border: '1px solid #bdc3c7',
+                    borderRadius: '5px',
+                    fontSize: '14px'
+                  }}
+                  placeholder="Enter new password (minimum 6 characters)"
+                  disabled={isResetting}
+                  onKeyPress={(e) => {
+                    if (e.key === 'Enter') {
+                      handlePasswordSubmit();
+                    }
+                  }}
+                />
+                <div style={{ fontSize: '12px', color: '#7f8c8d', marginTop: '5px' }}>
+                  Password must be at least 6 characters long
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
+                <button
+                  onClick={handleModalClose}
+                  disabled={isResetting}
+                  style={{
+                    padding: '10px 20px',
+                    backgroundColor: '#95a5a6',
+                    color: '#fff',
+                    border: 'none',
+                    borderRadius: '5px',
+                    cursor: isResetting ? 'not-allowed' : 'pointer',
+                    fontWeight: 'bold'
+                  }}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handlePasswordSubmit}
+                  disabled={isResetting || !newPassword.trim()}
+                  style={{
+                    padding: '10px 20px',
+                    backgroundColor: isResetting || !newPassword.trim() ? '#bdc3c7' : '#e74c3c',
+                    color: '#fff',
+                    border: 'none',
+                    borderRadius: '5px',
+                    cursor: isResetting || !newPassword.trim() ? 'not-allowed' : 'pointer',
+                    fontWeight: 'bold'
+                  }}
+                >
+                  {isResetting ? '⏳ Resetting...' : '🔑 Reset Password'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
         </div>
 
         {/* Results Summary */}

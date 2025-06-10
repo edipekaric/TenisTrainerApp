@@ -65,3 +65,16 @@ export async function adminRegisterUser(userData: {
     }
   });
 }
+
+export async function resetUserPassword(userId: number, newPassword: string): Promise<void> {
+  const token = localStorage.getItem('jwtToken');
+  await axios.put(`http://localhost:8080/api/users/admin/reset-password`, {
+    user_id: userId,
+    new_password: newPassword
+  }, {
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    }
+  });
+}
