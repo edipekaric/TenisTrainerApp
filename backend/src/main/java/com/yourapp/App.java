@@ -616,6 +616,7 @@ public class App {  // <--- This was missing!
             }
         });
 
+        // POST admin register new user (Admin only)
         app.post("/api/users/admin/register", ctx -> {
             String username = ctx.attribute("username");
             if (username == null) {
@@ -706,7 +707,262 @@ public class App {  // <--- This was missing!
             }
         });
 
+        // Auth middleware for transaction endpoints
+        app.before("/api/transactions/*", ctx -> {
+            String header = ctx.header("Authorization");
 
+            if (header == null || !header.startsWith("Bearer ")) {
+                ctx.status(401).result("Missing or invalid Authorization header");
+                return;
+            }
+
+            String token = header.substring(7);
+
+            if (!tokenProvider.validateToken(token)) {
+                ctx.status(401).result("Invalid token");
+                return;
+            }
+
+            String username = tokenProvider.getUsernameFromJWT(token);
+            ctx.attribute("username", username);
+        });
+
+        // POST create transaction (Admin only)
+        app.post("/api/transactions/create", ctx -> {
+            String username = ctx.attribute("username");
+            if (username == null) {
+                ctx.status(401).result("Unauthorized");
+                return;
+            }
+
+            try (Connection conn = Db.getConnection()) {
+                // Check if user is ADMIN
+                String roleSql = "SELECT role FROM users WHERE email = ?";
+                PreparedStatement roleStmt = conn.prepareStatement(roleSql);
+                roleStmt.setString(1, username);
+                ResultSet roleRs = roleStmt.executeQuery();
+
+                if (!roleRs.next() || !"ADMIN".equals(roleRs.getString("role"))) {
+                    ctx.status(403).result("Forbidden: Admins only");
+                    return;
+                }
+
+                // Read body
+                Map<String, Object> body = ctx.bodyAsClass(Map.class);
+                Object userIdObj = body.get("user_id");
+                String transactionType = (String) body.get("transaction_type");
+                Object amountObj = body.get("amount");
+                String description = (String) body.get("description");
+
+                if (userIdObj == null || transactionType == null || amountObj == null || description == null) {
+                    ctx.status(400).result("Missing required fields");
+                    return;
+                }
+
+                // Parse values
+                int userId;
+                double amount;
+                try {
+                    userId = Integer.parseInt(userIdObj.toString());
+                    amount = Double.parseDouble(amountObj.toString());
+                } catch (NumberFormatException e) {
+                    ctx.status(400).result("Invalid number format");
+                    return;
+                }
+
+                // Validate transaction type
+                if (!"ADD".equals(transactionType) && !"SUBTRACT".equals(transactionType)) {
+                    ctx.status(400).result("Invalid transaction type. Must be ADD or SUBTRACT");
+                    return;
+                }
+
+                // Validate amount
+                if (amount <= 0) {
+                    ctx.status(400).result("Amount must be positive");
+                    return;
+                }
+
+                // Get current user balance
+                String balanceSql = "SELECT balance FROM users WHERE id = ?";
+                PreparedStatement balanceStmt = conn.prepareStatement(balanceSql);
+                balanceStmt.setInt(1, userId);
+                ResultSet balanceRs = balanceStmt.executeQuery();
+
+                if (!balanceRs.next()) {
+                    ctx.status(404).result("User not found");
+                    return;
+                }
+
+                double currentBalance = balanceRs.getDouble("balance");
+                double newBalance;
+
+                if ("ADD".equals(transactionType)) {
+                    newBalance = currentBalance + amount;
+                } else { // SUBTRACT
+                    newBalance = currentBalance - amount;
+                    // Allow negative balances, but warn if it goes below 0
+                    if (newBalance < 0) {
+                        // You can uncomment this line if you want to prevent negative balances
+                        // ctx.status(400).result("Insufficient balance for this transaction");
+                        // return;
+                    }
+                }
+
+                // Start transaction
+                conn.setAutoCommit(false);
+
+                try {
+                    // Insert transaction record
+                    String insertTransactionSql = "INSERT INTO transactions (user_id, amount, transaction_type, description) VALUES (?, ?, ?, ?)";
+                    PreparedStatement insertTransactionStmt = conn.prepareStatement(insertTransactionSql);
+                    insertTransactionStmt.setInt(1, userId);
+                    insertTransactionStmt.setDouble(2, amount);
+                    insertTransactionStmt.setString(3, transactionType);
+                    insertTransactionStmt.setString(4, description);
+                    insertTransactionStmt.executeUpdate();
+
+                    // Update user balance
+                    String updateBalanceSql = "UPDATE users SET balance = ? WHERE id = ?";
+                    PreparedStatement updateBalanceStmt = conn.prepareStatement(updateBalanceSql);
+                    updateBalanceStmt.setDouble(1, newBalance);
+                    updateBalanceStmt.setInt(2, userId);
+                    updateBalanceStmt.executeUpdate();
+
+                    // Commit transaction
+                    conn.commit();
+                    ctx.result("Transaction processed successfully");
+
+                } catch (Exception e) {
+                    // Rollback on error
+                    conn.rollback();
+                    throw e;
+                } finally {
+                    conn.setAutoCommit(true);
+                }
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                ctx.status(500).result("Server error: " + e.getMessage());
+            }
+        });
+
+        // GET all transactions (Admin only)
+        app.get("/api/transactions/all", ctx -> {
+            String username = ctx.attribute("username");
+            if (username == null) {
+                ctx.status(401).result("Unauthorized");
+                return;
+            }
+
+            try (Connection conn = Db.getConnection()) {
+                // Check if user is ADMIN
+                String roleSql = "SELECT role FROM users WHERE email = ?";
+                PreparedStatement roleStmt = conn.prepareStatement(roleSql);
+                roleStmt.setString(1, username);
+                ResultSet roleRs = roleStmt.executeQuery();
+
+                if (!roleRs.next() || !"ADMIN".equals(roleRs.getString("role"))) {
+                    ctx.status(403).result("Forbidden: Admins only");
+                    return;
+                }
+
+                // Get all transactions with user info
+                String sql = "SELECT t.id, t.user_id, t.amount, t.transaction_type, t.description, " +
+                            "u.first_name, u.last_name, u.email " +
+                            "FROM transactions t " +
+                            "JOIN users u ON t.user_id = u.id " +
+                            "ORDER BY t.id DESC";
+
+                PreparedStatement stmt = conn.prepareStatement(sql);
+                ResultSet rs = stmt.executeQuery();
+
+                List<Map<String, Object>> transactions = new ArrayList<>();
+
+                while (rs.next()) {
+                    Map<String, Object> transaction = new HashMap<>();
+                    transaction.put("id", rs.getInt("id"));
+                    transaction.put("user_id", rs.getInt("user_id"));
+                    transaction.put("amount", rs.getDouble("amount"));
+                    transaction.put("transaction_type", rs.getString("transaction_type"));
+                    transaction.put("description", rs.getString("description"));
+                    transaction.put("user_name", rs.getString("first_name") + " " + rs.getString("last_name"));
+                    transaction.put("user_email", rs.getString("email"));
+                    
+                    transactions.add(transaction);
+                }
+
+                ctx.json(transactions);
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                ctx.status(500).result("Server error: " + e.getMessage());
+            }
+        });
+
+        // GET transactions for specific user
+        app.get("/api/transactions/user/{userId}", ctx -> {
+            String username = ctx.attribute("username");
+            if (username == null) {
+                ctx.status(401).result("Unauthorized");
+                return;
+            }
+
+            try (Connection conn = Db.getConnection()) {
+                // Check if user is ADMIN or requesting their own transactions
+                String userIdStr = ctx.pathParam("userId");
+                int requestedUserId = Integer.parseInt(userIdStr);
+
+                String userCheckSql = "SELECT id, role FROM users WHERE email = ?";
+                PreparedStatement userCheckStmt = conn.prepareStatement(userCheckSql);
+                userCheckStmt.setString(1, username);
+                ResultSet userCheckRs = userCheckStmt.executeQuery();
+
+                if (!userCheckRs.next()) {
+                    ctx.status(404).result("User not found");
+                    return;
+                }
+
+                int currentUserId = userCheckRs.getInt("id");
+                String currentUserRole = userCheckRs.getString("role");
+
+                // Only allow if admin or user requesting their own transactions
+                if (!"ADMIN".equals(currentUserRole) && currentUserId != requestedUserId) {
+                    ctx.status(403).result("Forbidden: Can only view your own transactions");
+                    return;
+                }
+
+                // Get transactions for the user
+                String sql = "SELECT id, user_id, amount, transaction_type, description " +
+                            "FROM transactions " +
+                            "WHERE user_id = ? " +
+                            "ORDER BY id DESC";
+
+                PreparedStatement stmt = conn.prepareStatement(sql);
+                stmt.setInt(1, requestedUserId);
+                ResultSet rs = stmt.executeQuery();
+
+                List<Map<String, Object>> transactions = new ArrayList<>();
+
+                while (rs.next()) {
+                    Map<String, Object> transaction = new HashMap<>();
+                    transaction.put("id", rs.getInt("id"));
+                    transaction.put("user_id", rs.getInt("user_id"));
+                    transaction.put("amount", rs.getDouble("amount"));
+                    transaction.put("transaction_type", rs.getString("transaction_type"));
+                    transaction.put("description", rs.getString("description"));
+                    
+                    transactions.add(transaction);
+                }
+
+                ctx.json(transactions);
+
+            } catch (NumberFormatException e) {
+                ctx.status(400).result("Invalid user ID format");
+            } catch (Exception e) {
+                e.printStackTrace();
+                ctx.status(500).result("Server error: " + e.getMessage());
+            }
+        });
 
         System.out.println("✅ Backend is ready!");
     }

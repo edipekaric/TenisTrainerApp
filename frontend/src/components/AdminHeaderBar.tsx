@@ -24,6 +24,10 @@ const AdminHeaderBar: React.FC = () => {
     navigate('/admin/register-user');
   };
 
+  const handleTransactionClick = () => {
+    navigate('/admin/transaction');
+  };
+
   return (
     <header style={{
       display: 'flex',
@@ -53,6 +57,11 @@ const AdminHeaderBar: React.FC = () => {
         {/* Register User Button */}
         <button onClick={handleRegisterUserClick} style={{...buttonStyle, backgroundColor: '#f39c12'}}>
           ➕ Register User
+        </button>
+        
+        {/* Transaction Button */}
+        <button onClick={handleTransactionClick} style={{...buttonStyle, backgroundColor: '#9b59b6'}}>
+          💰 Transaction
         </button>
         
         {/* All Users Button */}

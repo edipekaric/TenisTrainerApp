@@ -9,6 +9,7 @@ import UserDash from './pages/UserDash';
 import AdminAllUsers from './pages/AdminAllUsers';
 import UserProfile from './pages/UserProfile';
 import AdminRegisterUser from './pages/AdminRegisterUser';
+import AdminTransaction from './pages/AdminTransaction';
 
   
 const App: React.FC = () => {
@@ -24,6 +25,7 @@ const App: React.FC = () => {
         <Route path="/admin/users" element={<AdminAllUsers />} /> 
         <Route path="/user-profile" element={<UserProfile />} />
         <Route path="/admin/register-user" element={<AdminRegisterUser />} />
+        <Route path="/admin/transaction" element={<AdminTransaction />} />
       </Routes>
     </Router>
   );
