@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import AdminHeaderBar from '../components/AdminHeaderBar';
 import { getAllUsers } from '../api/userApi';
 import { createTransaction, getUserTransactions } from '../api/transactionApi';
+import Footer from '../components/Footer';
 
 interface User {
   id: number;
@@ -635,6 +636,7 @@ const AdminTransaction: React.FC = () => {
           </ul>
         </div>
       </main>
+      <Footer />
     </>
   );
 };

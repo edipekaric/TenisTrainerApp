@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import AdminHeaderBar from '../components/AdminHeaderBar';
+import Footer from '../components/Footer';
 import { getMyTimeSlots, getAllTimeSlots, addTimeSlot, deleteTimeSlot } from '../api/timeSlotApi';
 
 interface TimeSlot {
@@ -567,6 +568,7 @@ const AdminDash: React.FC = () => {
           </div>
         )}
       </main>
+      <Footer />
     </>
   );
 };

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import UserHeaderBar from '../components/UserHeaderBar';
 import { getFreeTimeSlots, getMyTimeSlots, bookTimeSlot, unbookTimeSlot } from '../api/timeSlotApi';
+import Footer from '../components/Footer';
 
 interface TimeSlot {
   id: number;
@@ -508,6 +509,7 @@ const UserDash: React.FC = () => {
           </div>
         </div>
       </main>
+      <Footer />
     </>
   );
 };

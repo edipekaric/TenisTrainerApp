@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import AdminHeaderBar from '../components/AdminHeaderBar';
 import { getAllUsers, resetUserPassword } from '../api/userApi';
+import Footer from '../components/Footer';
 
 interface User {
   id: number;
@@ -537,6 +538,7 @@ const AdminAllUsers: React.FC = () => {
           </div>
         )}
       </main>
+      <Footer />
     </>
   );
 };

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import UserHeaderBar from '../components/UserHeaderBar';
 import { getUserProfile, updateUserProfile } from '../api/userApi';
 import { getMyTimeSlots, unbookTimeSlot } from '../api/timeSlotApi';
+import Footer from '../components/Footer';
 
 interface UserProfile {
   id: number;
@@ -580,6 +581,7 @@ const UserProfile: React.FC = () => {
           </div>
         </div>
       </main>
+      <Footer />
     </>
   );
 };

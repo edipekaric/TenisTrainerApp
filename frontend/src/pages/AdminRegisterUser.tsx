@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import AdminHeaderBar from '../components/AdminHeaderBar';
 import { adminRegisterUser } from '../api/userApi';
+import Footer from '../components/Footer';
 
 const AdminRegisterUser: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -453,6 +454,7 @@ const AdminRegisterUser: React.FC = () => {
           </ul>
         </div>
       </main>
+      <Footer />
     </>
   );
 };
