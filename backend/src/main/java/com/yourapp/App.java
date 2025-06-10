@@ -82,7 +82,11 @@ public class App {  // <--- This was missing!
             }
         });
 
-        app.before("/api/protected/*", ctx -> {
+        
+        // Add this BEFORE your existing app.before("/api/time-slots/*", ...)
+
+        // Auth for exact /api/time-slots path (POST requests)
+        app.before("/api/time-slots", ctx -> {
             String header = ctx.header("Authorization");
 
             if (header == null || !header.startsWith("Bearer ")) {
@@ -97,11 +101,11 @@ public class App {  // <--- This was missing!
                 return;
             }
 
-            // Optional: extract username/email from token and store it in ctx
             String username = tokenProvider.getUsernameFromJWT(token);
-            ctx.attribute("username", username); // You can access it in handlers later
+            ctx.attribute("username", username);
         });
 
+        // Keep your existing middleware for sub-paths
         app.before("/api/time-slots/*", ctx -> {
             String header = ctx.header("Authorization");
 
@@ -120,6 +124,8 @@ public class App {  // <--- This was missing!
             String username = tokenProvider.getUsernameFromJWT(token);
             ctx.attribute("username", username);
         });
+
+
 
         // GET my booked time slots
         app.get("/api/time-slots/my", ctx -> {
@@ -289,6 +295,69 @@ public class App {  // <--- This was missing!
                 ctx.status(500).result("Server error: " + e.getMessage());
             }
         });
+
+        // Add this endpoint to your Java backend (after your POST endpoints)
+
+        // DELETE Remove time slot (Admin only)
+        app.delete("/api/time-slots/{id}", ctx -> {
+            String username = ctx.attribute("username");
+            if (username == null) {
+                ctx.status(401).result("Unauthorized");
+                return;
+            }
+
+            int slotId = Integer.parseInt(ctx.pathParam("id"));
+
+            try (Connection conn = Db.getConnection()) {
+                // Check if user is ADMIN
+                String roleSql = "SELECT role FROM users WHERE email = ?";
+                PreparedStatement roleStmt = conn.prepareStatement(roleSql);
+                roleStmt.setString(1, username);
+                ResultSet roleRs = roleStmt.executeQuery();
+
+                if (!roleRs.next() || !"ADMIN".equals(roleRs.getString("role"))) {
+                    ctx.status(403).result("Forbidden: Admins only");
+                    return;
+                }
+
+                // Check if slot exists and whether it's booked
+                String checkSql = "SELECT is_booked FROM time_slots WHERE id = ?";
+                PreparedStatement checkStmt = conn.prepareStatement(checkSql);
+                checkStmt.setInt(1, slotId);
+                ResultSet checkRs = checkStmt.executeQuery();
+
+                if (!checkRs.next()) {
+                    ctx.status(404).result("Time slot not found");
+                    return;
+                }
+
+                boolean isBooked = checkRs.getBoolean("is_booked");
+                
+                // Optional: Prevent deletion of booked slots (uncomment if desired)
+                // if (isBooked) {
+                //     ctx.status(400).result("Cannot delete booked time slot");
+                //     return;
+                // }
+
+                // Delete the time slot
+                String deleteSql = "DELETE FROM time_slots WHERE id = ?";
+                PreparedStatement deleteStmt = conn.prepareStatement(deleteSql);
+                deleteStmt.setInt(1, slotId);
+                int deletedRows = deleteStmt.executeUpdate();
+
+                if (deletedRows > 0) {
+                    ctx.result("Time slot deleted successfully");
+                } else {
+                    ctx.status(404).result("Time slot not found");
+                }
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                ctx.status(500).result("Server error: " + e.getMessage());
+            }
+        });
+
+
 
 
 

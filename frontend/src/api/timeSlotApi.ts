@@ -43,3 +43,21 @@ export async function addTimeSlot(date: string, start_time: string, end_time: st
   });
   return response.data;
 }
+
+export async function bookTimeSlot(slotId: number): Promise<void> {
+  const token = localStorage.getItem('jwtToken');
+  await axios.post(`${API_URL}/book/${slotId}`, {}, {
+    headers: {
+      'Authorization': `Bearer ${token}`
+    }
+  });
+}
+
+export async function deleteTimeSlot(slotId: number): Promise<void> {
+  const token = localStorage.getItem('jwtToken');
+  await axios.delete(`${API_URL}/${slotId}`, {
+    headers: {
+      'Authorization': `Bearer ${token}`
+    }
+  });
+}
