@@ -76,3 +76,12 @@ export async function getAllTimeSlots(days = 7): Promise<TimeSlot[]> {
   });
   return response.data;
 }
+
+export async function unbookTimeSlot(slotId: number): Promise<void> {
+  const token = localStorage.getItem('jwtToken');
+  await axios.post(`${API_URL}/unbook/${slotId}`, {}, {
+    headers: {
+      'Authorization': `Bearer ${token}`
+    }
+  });
+}

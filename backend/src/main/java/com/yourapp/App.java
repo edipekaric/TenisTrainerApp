@@ -296,6 +296,65 @@ public class App {  // <--- This was missing!
             }
         });
 
+        // POST Unbook time slot (User unbooks their own slot)
+        app.post("/api/time-slots/unbook/{id}", ctx -> {
+            String username = ctx.attribute("username");
+            if (username == null) {
+                ctx.status(401).result("Unauthorized");
+                return;
+            }
+
+            int slotId = Integer.parseInt(ctx.pathParam("id"));
+
+            try (Connection conn = Db.getConnection()) {
+                // Get user ID
+                String userIdSql = "SELECT id FROM users WHERE email = ?";
+                PreparedStatement userStmt = conn.prepareStatement(userIdSql);
+                userStmt.setString(1, username);
+                ResultSet userRs = userStmt.executeQuery();
+
+                if (!userRs.next()) {
+                    ctx.status(500).result("User not found");
+                    return;
+                }
+
+                int userId = userRs.getInt("id");
+
+                // Check if the slot is booked by this user
+                String checkSql = "SELECT booked_by FROM time_slots WHERE id = ? AND is_booked = true";
+                PreparedStatement checkStmt = conn.prepareStatement(checkSql);
+                checkStmt.setInt(1, slotId);
+                ResultSet checkRs = checkStmt.executeQuery();
+
+                if (!checkRs.next()) {
+                    ctx.status(400).result("Slot is not booked or does not exist");
+                    return;
+                }
+
+                int bookedBy = checkRs.getInt("booked_by");
+                if (bookedBy != userId) {
+                    ctx.status(403).result("You can only unbook your own slots");
+                    return;
+                }
+
+                // Unbook the slot
+                String updateSql = "UPDATE time_slots SET is_booked = false, booked_by = NULL WHERE id = ?";
+                PreparedStatement updateStmt = conn.prepareStatement(updateSql);
+                updateStmt.setInt(1, slotId);
+                int updatedRows = updateStmt.executeUpdate();
+
+                if (updatedRows > 0) {
+                    ctx.result("Slot unbooked successfully");
+                } else {
+                    ctx.status(500).result("Failed to unbook slot");
+                }
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                ctx.status(500).result("Server error: " + e.getMessage());
+            }
+        });
+
         // Add this endpoint to your Java backend (after your POST endpoints)
 
         // DELETE Remove time slot (Admin only)

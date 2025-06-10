@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import UserHeaderBar from '../components/UserHeaderBar';
 import { getUserProfile, updateUserProfile } from '../api/userApi';
-import { getMyTimeSlots } from '../api/timeSlotApi';
+import { getMyTimeSlots, unbookTimeSlot } from '../api/timeSlotApi';
 
 interface UserProfile {
   id: number;
@@ -35,6 +35,7 @@ const UserProfile: React.FC = () => {
     phone: ''
   });
   const [updating, setUpdating] = useState(false);
+  const [unbookingSlot, setUnbookingSlot] = useState<number | null>(null);
 
   useEffect(() => {
     loadProfileData();
@@ -93,6 +94,24 @@ const UserProfile: React.FC = () => {
       email: profile?.email || '',
       phone: profile?.phone || ''
     });
+  };
+
+  const handleUnbookSlot = async (slotId: number, slotDate: string, slotTime: string) => {
+    if (!confirm(`Are you sure you want to unbook your appointment on ${slotDate} at ${slotTime}? This action cannot be undone.`)) {
+      return;
+    }
+
+    setUnbookingSlot(slotId);
+    try {
+      await unbookTimeSlot(slotId);
+      await loadProfileData(); // Refresh data to update the bookings list
+      alert('Appointment unbooked successfully!');
+    } catch (error) {
+      console.error('Error unbooking slot:', error);
+      alert('Failed to unbook appointment. Please try again.');
+    } finally {
+      setUnbookingSlot(null);
+    }
   };
 
   const getUpcomingBookings = () => {
@@ -466,16 +485,48 @@ const UserProfile: React.FC = () => {
                             <span style={{ marginLeft: '10px', color: '#7f8c8d' }}>
                               {booking.start_time} - {booking.end_time}
                             </span>
+                            <div style={{ fontSize: '12px', color: '#7f8c8d', marginTop: '3px' }}>
+                              Booking ID: #{booking.id}
+                            </div>
                           </div>
-                          <div style={{
-                            padding: '4px 12px',
-                            borderRadius: '15px',
-                            fontSize: '12px',
-                            fontWeight: 'bold',
-                            backgroundColor: '#27ae60',
-                            color: '#fff'
-                          }}>
-                            Confirmed
+                          <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                            <div style={{
+                              padding: '4px 12px',
+                              borderRadius: '15px',
+                              fontSize: '12px',
+                              fontWeight: 'bold',
+                              backgroundColor: '#27ae60',
+                              color: '#fff'
+                            }}>
+                              Confirmed
+                            </div>
+                            <button
+                              onClick={() => handleUnbookSlot(booking.id, booking.date, `${booking.start_time} - ${booking.end_time}`)}
+                              disabled={unbookingSlot === booking.id}
+                              style={{
+                                padding: '6px 12px',
+                                backgroundColor: unbookingSlot === booking.id ? '#bdc3c7' : '#e74c3c',
+                                color: '#fff',
+                                border: 'none',
+                                borderRadius: '4px',
+                                cursor: unbookingSlot === booking.id ? 'not-allowed' : 'pointer',
+                                fontSize: '12px',
+                                fontWeight: 'bold',
+                                transition: 'background-color 0.2s ease'
+                              }}
+                              onMouseOver={(e) => {
+                                if (unbookingSlot !== booking.id) {
+                                  e.currentTarget.style.backgroundColor = '#c0392b';
+                                }
+                              }}
+                              onMouseOut={(e) => {
+                                if (unbookingSlot !== booking.id) {
+                                  e.currentTarget.style.backgroundColor = '#e74c3c';
+                                }
+                              }}
+                            >
+                              {unbookingSlot === booking.id ? '⏳ Unbooking...' : '❌ Unbook'}
+                            </button>
                           </div>
                         </div>
                       ))}
@@ -505,6 +556,9 @@ const UserProfile: React.FC = () => {
                             <span style={{ marginLeft: '10px', color: '#7f8c8d' }}>
                               {booking.start_time} - {booking.end_time}
                             </span>
+                            <div style={{ fontSize: '12px', color: '#7f8c8d', marginTop: '3px' }}>
+                              Booking ID: #{booking.id}
+                            </div>
                           </div>
                           <div style={{
                             padding: '4px 12px',

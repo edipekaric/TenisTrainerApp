@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import UserHeaderBar from '../components/UserHeaderBar';
-import { getFreeTimeSlots, getMyTimeSlots, bookTimeSlot } from '../api/timeSlotApi';
+import { getFreeTimeSlots, getMyTimeSlots, bookTimeSlot, unbookTimeSlot } from '../api/timeSlotApi';
 
 interface TimeSlot {
   id: number;
@@ -26,6 +26,7 @@ const UserDash: React.FC = () => {
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [bookingSlot, setBookingSlot] = useState<number | null>(null);
+  const [unbookingSlot, setUnbookingSlot] = useState<number | null>(null);
 
   // Generate next 7 days starting from today
   const generateNext7Days = (): DateInfo[] => {
@@ -92,6 +93,24 @@ const UserDash: React.FC = () => {
     }
   };
 
+  const handleUnbookSlot = async (slotId: number) => {
+    if (!confirm('Are you sure you want to unbook this time slot? This action cannot be undone.')) {
+      return;
+    }
+
+    setUnbookingSlot(slotId);
+    try {
+      await unbookTimeSlot(slotId);
+      await loadSlots(); // Refresh data
+      alert('Time slot unbooked successfully!');
+    } catch (error) {
+      console.error('Error unbooking time slot:', error);
+      alert('Failed to unbook time slot. Please try again.');
+    } finally {
+      setUnbookingSlot(null);
+    }
+  };
+
   const getFreeSlotsForDate = (dateString: string): TimeSlot[] => {
     return freeSlots.filter(slot => slot.date === dateString);
   };
@@ -143,19 +162,41 @@ const UserDash: React.FC = () => {
               </p>
               {upcomingBookings.slice(0, 3).map(booking => (
                 <div key={booking.id} style={{ 
-                  marginBottom: '5px', 
-                  padding: '5px 0',
-                  borderBottom: '1px solid #bbdefb'
+                  marginBottom: '10px', 
+                  padding: '10px',
+                  borderBottom: upcomingBookings.indexOf(booking) < 2 ? '1px solid #bbdefb' : 'none',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center'
                 }}>
-                  <strong>{booking.date}</strong> at {booking.start_time} - {booking.end_time}
-                  <span style={{ 
-                    marginLeft: '10px', 
-                    fontSize: '12px',
-                    color: '#27ae60',
-                    fontWeight: 'bold'
-                  }}>
-                    ✓ Confirmed
-                  </span>
+                  <div>
+                    <strong>{booking.date}</strong> at {booking.start_time} - {booking.end_time}
+                    <span style={{ 
+                      marginLeft: '10px', 
+                      fontSize: '12px',
+                      color: '#27ae60',
+                      fontWeight: 'bold'
+                    }}>
+                      ✓ Confirmed
+                    </span>
+                  </div>
+                  <button
+                    onClick={() => handleUnbookSlot(booking.id)}
+                    disabled={unbookingSlot === booking.id}
+                    style={{
+                      padding: '6px 12px',
+                      backgroundColor: unbookingSlot === booking.id ? '#bdc3c7' : '#e74c3c',
+                      color: '#fff',
+                      border: 'none',
+                      borderRadius: '4px',
+                      cursor: unbookingSlot === booking.id ? 'not-allowed' : 'pointer',
+                      fontSize: '12px',
+                      fontWeight: 'bold',
+                      transition: 'background-color 0.2s ease'
+                    }}
+                  >
+                    {unbookingSlot === booking.id ? 'Unbooking...' : '❌ Unbook'}
+                  </button>
                 </div>
               ))}
               {upcomingBookings.length > 3 && (
@@ -294,9 +335,39 @@ const UserDash: React.FC = () => {
                           }}>
                             🎯 YOUR BOOKING
                           </div>
-                          <div style={{ fontSize: '11px', color: '#7f8c8d' }}>
+                          <div style={{ fontSize: '11px', color: '#7f8c8d', marginBottom: '10px' }}>
                             Booking ID: {booking.id}
                           </div>
+                          
+                          {/* Unbook Button */}
+                          <button
+                            onClick={() => handleUnbookSlot(booking.id)}
+                            disabled={unbookingSlot === booking.id}
+                            style={{
+                              padding: '8px 16px',
+                              backgroundColor: unbookingSlot === booking.id ? '#bdc3c7' : '#e74c3c',
+                              color: '#fff',
+                              border: 'none',
+                              borderRadius: '5px',
+                              cursor: unbookingSlot === booking.id ? 'not-allowed' : 'pointer',
+                              fontSize: '12px',
+                              fontWeight: 'bold',
+                              width: '100%',
+                              transition: 'background-color 0.2s ease'
+                            }}
+                            onMouseOver={(e) => {
+                              if (unbookingSlot !== booking.id) {
+                                e.currentTarget.style.backgroundColor = '#c0392b';
+                              }
+                            }}
+                            onMouseOut={(e) => {
+                              if (unbookingSlot !== booking.id) {
+                                e.currentTarget.style.backgroundColor = '#e74c3c';
+                              }
+                            }}
+                          >
+                            {unbookingSlot === booking.id ? 'Unbooking...' : '❌ Unbook This Slot'}
+                          </button>
                         </div>
                       ))}
                     </div>

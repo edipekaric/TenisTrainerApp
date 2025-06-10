@@ -3,6 +3,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { logout } from '../api/authApi';
+import logo from '../assets/logo.png';
 
 const UserHeaderBar: React.FC = () => {
   const navigate = useNavigate();
@@ -37,7 +38,7 @@ const UserHeaderBar: React.FC = () => {
         }}
         onClick={handleHomeClick}
       >
-        <img src="/logo.jpg" alt="Logo" style={{ height: '40px', marginRight: '15px' }} />
+        <img src={logo} alt="Logo" style={{ height: '40px', marginRight: '15px' }} />
         <h2>Booking App</h2>
       </div>
       <div>
