@@ -1,3 +1,3 @@
 window.env = {
-  VITE_BACKEND_URL: "https://tenistrainerapp-backend-production-url.up.railway.app"
+  VITE_BACKEND_URL: "https://backend-production-0bdc.up.railway.app/"
 };

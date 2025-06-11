@@ -12,8 +12,7 @@ export interface User {
   created_at?: string;
 }
 
-const backendUrl = (window as any)?.env?.VITE_BACKEND_URL || '';
-const API_URL = `${backendUrl}/api/users`;
+const API_URL = `${import.meta.env.VITE_API_URL}/api/users`;
 
 export async function getAllUsers(): Promise<User[]> {
   const token = localStorage.getItem('jwtToken');

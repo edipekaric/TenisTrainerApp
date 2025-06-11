@@ -2,8 +2,7 @@
 
 import axios from 'axios';
 
-const backendUrl = (window as any)?.env?.VITE_BACKEND_URL || '';
-const API_URL = `${backendUrl}/api/auth`;
+const API_URL = `${import.meta.env.VITE_API_URL}/api/auth`;
 
 export interface Transaction {
   id: number;

@@ -1,7 +1,6 @@
 import axios from 'axios';
 
-const backendUrl = (window as any)?.env?.VITE_BACKEND_URL || '';
-const API_URL = `${backendUrl}/api/auth`;
+const API_URL = `${import.meta.env.VITE_API_URL}/api/auth`;
 
 interface JWTResponse {
   token: string;
@@ -33,7 +32,7 @@ export async function adminRegisterUser(userData: {
   role: 'USER' | 'ADMIN';
   balance: number;
 }): Promise<void> {
-  const token = localStorage.getItem('jwtToken');
+  const token = getToken();
   await axios.post(`${API_URL}/admin/register`, userData, {
     headers: {
       'Authorization': `Bearer ${token}`
