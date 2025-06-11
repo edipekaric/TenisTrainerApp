@@ -1,4 +1,3 @@
-// src/api/timeSlotApi.ts
 import axios from 'axios';
 
 export interface TimeSlot {
@@ -15,7 +14,7 @@ export interface TimeSlot {
   } | null;
 }
 
-const API_URL = `${import.meta.env.VITE_API_URL}/api/auth`;
+const API_URL = `${import.meta.env.VITE_API_URL}/api/time-slots`;
 
 export async function getMyTimeSlots(): Promise<TimeSlot[]> {
   const token = localStorage.getItem('jwtToken');
