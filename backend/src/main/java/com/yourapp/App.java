@@ -13,14 +13,60 @@ import java.util.UUID;
 import com.yourapp.Dto.JWTTokenDto;
 import com.yourapp.Dto.LoginDto;
 import com.yourapp.Security.JWTTokenProvider;
+import com.yourapp.Security.PasswordSecurity;
 
 import io.javalin.Javalin;
 
-public class App {  // <--- This was missing!
+public class App {
+
+    public static void migrateExistingPasswords() {
+        try (Connection conn = Db.getConnection()) {
+            // Get all users with their current passwords
+            String selectSql = "SELECT id, email, password FROM users";
+            String updateSql = "UPDATE users SET password = ? WHERE id = ?";
+            
+            try (PreparedStatement selectStmt = conn.prepareStatement(selectSql);
+                PreparedStatement updateStmt = conn.prepareStatement(updateSql)) {
+                
+                ResultSet rs = selectStmt.executeQuery();
+                int migratedCount = 0;
+                
+                while (rs.next()) {
+                    int userId = rs.getInt("id");
+                    String email = rs.getString("email");
+                    String currentPassword = rs.getString("password");
+                    
+                    // Check if password is already hashed (hashed passwords are much longer)
+                    if (currentPassword.length() < 50) {
+                        // Assume it's plain text, hash it
+                        String hashedPassword = PasswordSecurity.hashPassword(currentPassword);
+                        
+                        updateStmt.setString(1, hashedPassword);
+                        updateStmt.setInt(2, userId);
+                        updateStmt.executeUpdate();
+                        
+                        migratedCount++;
+                        System.out.println("✅ Migrated password for user: " + email);
+                    } else {
+                        System.out.println("⏭️ Password already hashed for user: " + email);
+                    }
+                }
+                
+                System.out.println("🎉 Migration complete! Migrated " + migratedCount + " passwords.");
+            }
+        } catch (Exception e) {
+            System.err.println("❌ Error during password migration: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
 
     public static void main(String[] args) {
 
         System.out.println("🚀 Starting Backend...");
+
+        // Run password migration ONCE (comment out after first run)
+        System.out.println("🔄 Starting password migration...");
+        migrateExistingPasswords();
 
         Javalin app = Javalin.create(config -> {
             config.showJavalinBanner = false;
@@ -68,8 +114,8 @@ public class App {  // <--- This was missing!
                     String storedPassword = rs.getString("password");
                     String role = rs.getString("role");
 
-                    if (storedPassword.equals(loginDto.getPassword())) {
-                        String token = tokenProvider.generateToken(loginDto.getEmail(), role); // <-- pass role!
+                    if (PasswordSecurity.verifyPassword(loginDto.getPassword(), storedPassword)) {
+                        String token = tokenProvider.generateToken(loginDto.getEmail(), role);
                         ctx.json(new JWTTokenDto(token));
                     } else {
                         ctx.status(401).result("Invalid password");
@@ -83,9 +129,6 @@ public class App {  // <--- This was missing!
                 ctx.status(500).result("Server error: " + e.getMessage());
             }
         });
-
-        
-        // Add this BEFORE your existing app.before("/api/time-slots/*", ...)
 
         // Auth for exact /api/time-slots path (POST requests)
         app.before("/api/time-slots", ctx -> {
@@ -107,7 +150,6 @@ public class App {  // <--- This was missing!
             ctx.attribute("username", username);
         });
 
-        // Keep your existing middleware for sub-paths
         app.before("/api/time-slots/*", ctx -> {
             String header = ctx.header("Authorization");
 
@@ -126,8 +168,6 @@ public class App {  // <--- This was missing!
             String username = tokenProvider.getUsernameFromJWT(token);
             ctx.attribute("username", username);
         });
-
-
 
         // GET my booked time slots
         app.get("/api/time-slots/my", ctx -> {
@@ -253,8 +293,6 @@ public class App {  // <--- This was missing!
             }
         });
 
-
-
         // POST Book time slot (User books a slot)
         app.post("/api/time-slots/book/{id}", ctx -> {
             String username = ctx.attribute("username");
@@ -357,8 +395,6 @@ public class App {  // <--- This was missing!
             }
         });
 
-        // Add this endpoint to your Java backend (after your POST endpoints)
-
         // DELETE Remove time slot (Admin only)
         app.delete("/api/time-slots/{id}", ctx -> {
             String username = ctx.attribute("username");
@@ -393,12 +429,6 @@ public class App {  // <--- This was missing!
                 }
 
                 boolean isBooked = checkRs.getBoolean("is_booked");
-                
-                // Optional: Prevent deletion of booked slots (uncomment if desired)
-                // if (isBooked) {
-                //     ctx.status(400).result("Cannot delete booked time slot");
-                //     return;
-                // }
 
                 // Delete the time slot
                 String deleteSql = "DELETE FROM time_slots WHERE id = ?";
@@ -417,10 +447,6 @@ public class App {  // <--- This was missing!
                 ctx.status(500).result("Server error: " + e.getMessage());
             }
         });
-
-
-
-        // Replace your existing /api/time-slots/all endpoint with this updated version
 
         // GET all time slots for next X days (Admin only - shows both free and booked)
         app.get("/api/time-slots/all", ctx -> {
@@ -490,15 +516,6 @@ public class App {  // <--- This was missing!
                 ctx.status(500).result("Server error: " + e.getMessage());
             }
         });
-
-
-
-
-
-
-
-        // Add this to your Java backend after your existing endpoints
-        // Add authentication middleware for /api/users/* routes first
 
         // Auth middleware for users endpoints
         app.before("/api/users/*", ctx -> {
@@ -572,10 +589,6 @@ public class App {  // <--- This was missing!
             }
         });
 
-
-
-
-
         // GET user profile (for current logged-in user)
         app.get("/api/users/profile", ctx -> {
             String username = ctx.attribute("username");
@@ -615,9 +628,6 @@ public class App {  // <--- This was missing!
                 ctx.status(500).result("Server error: " + e.getMessage());
             }
         });
-
-
-
 
         // PUT update user profile (for current logged-in user)
         app.put("/api/users/profile", ctx -> {
@@ -740,8 +750,7 @@ public class App {  // <--- This was missing!
                     return;
                 }
 
-                // Hash password (you should use proper password hashing)
-                String hashedPassword = password; // In production, use BCrypt or similar
+                String hashedPassword = PasswordSecurity.hashPassword(password);
 
                 // Insert new user
                 String insertSql = "INSERT INTO users (first_name, last_name, email, password, phone, role, balance) VALUES (?, ?, ?, ?, ?, ?, ?)";
@@ -832,8 +841,7 @@ public class App {  // <--- This was missing!
                     return;
                 }
 
-                // Hash password (in production, use BCrypt or similar)
-                String hashedPassword = newPassword; // In production, use proper password hashing
+                String hashedPassword = PasswordSecurity.hashPassword(newPassword);
 
                 // Update user password
                 String updateSql = "UPDATE users SET password = ? WHERE id = ?";
@@ -1112,7 +1120,6 @@ public class App {  // <--- This was missing!
             }
         });
 
-
         // POST /api/auth/forgot-password
         app.post("/api/auth/forgot-password", ctx -> {
             Map<String, Object> body = ctx.bodyAsClass(Map.class);
@@ -1207,7 +1214,7 @@ public class App {  // <--- This was missing!
                         // Update password
                         String updatePasswordSql = "UPDATE users SET password = ? WHERE id = ?";
                         PreparedStatement updatePasswordStmt = conn.prepareStatement(updatePasswordSql);
-                        updatePasswordStmt.setString(1, newPassword); // In production, hash this!
+                        updatePasswordStmt.setString(1, PasswordSecurity.hashPassword(newPassword)); // In production, hash this!
                         updatePasswordStmt.setInt(2, userId);
                         updatePasswordStmt.executeUpdate();
                         
