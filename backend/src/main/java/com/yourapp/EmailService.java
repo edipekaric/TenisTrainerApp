@@ -35,10 +35,16 @@ public class EmailService {
     private static String getConfig(String key, String envVar) {
         String value = config.getProperty(key);
         if (value != null && !value.trim().isEmpty()) {
+            // Fix: if value is "${...}" → treat as empty and fallback to env
+            if (value.startsWith("${") && value.endsWith("}")) {
+                System.out.println("🔄 Falling back to ENV for " + key + " → using " + envVar);
+                return System.getenv(envVar);
+            }
             return value;
         }
         return System.getenv(envVar);
     }
+
     
     // Configuration getters
     private static final String SMTP_HOST = getConfig("email.smtp.host", "SMTP_HOST");
