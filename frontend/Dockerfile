@@ -13,5 +13,6 @@ WORKDIR /app
 COPY --from=build /app/dist /app/dist
 RUN npm install -g serve
 
-EXPOSE 5173
-CMD ["serve", "-s", "dist", "-l", "5173"]
+# Railway expects HTTP on port 80
+EXPOSE 80
+CMD ["serve", "-s", "dist", "-l", "80"]
