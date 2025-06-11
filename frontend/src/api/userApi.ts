@@ -12,7 +12,8 @@ export interface User {
   created_at?: string;
 }
 
-const API_URL = 'http://localhost:8080/api/users';
+const backendUrl = (window as any)?.env?.VITE_BACKEND_URL || '';
+const API_URL = `${backendUrl}/api/users`;
 
 export async function getAllUsers(): Promise<User[]> {
   const token = localStorage.getItem('jwtToken');
@@ -58,7 +59,7 @@ export async function adminRegisterUser(userData: {
   balance: number;
 }): Promise<void> {
   const token = localStorage.getItem('jwtToken');
-  await axios.post(`http://localhost:8080/api/users/admin/register`, userData, {
+  await axios.post(`${API_URL}/admin/register`, userData, {
     headers: {
       'Authorization': `Bearer ${token}`,
       'Content-Type': 'application/json'
@@ -68,7 +69,7 @@ export async function adminRegisterUser(userData: {
 
 export async function resetUserPassword(userId: number, newPassword: string): Promise<void> {
   const token = localStorage.getItem('jwtToken');
-  await axios.put(`http://localhost:8080/api/users/admin/reset-password`, {
+  await axios.put(`${API_URL}/admin/reset-password`, {
     user_id: userId,
     new_password: newPassword
   }, {

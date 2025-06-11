@@ -15,7 +15,8 @@ export interface TimeSlot {
   } | null;
 }
 
-const API_URL = 'http://localhost:8080/api/time-slots';
+const backendUrl = (window as any)?.env?.VITE_BACKEND_URL || '';
+const API_URL = `${backendUrl}/api/auth`;
 
 export async function getMyTimeSlots(): Promise<TimeSlot[]> {
   const token = localStorage.getItem('jwtToken');

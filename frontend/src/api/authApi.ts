@@ -1,6 +1,7 @@
 import axios from 'axios';
 
-const API_URL = 'http://localhost:8080/api/auth';
+const backendUrl = (window as any)?.env?.VITE_BACKEND_URL || '';
+const API_URL = `${backendUrl}/api/auth`;
 
 interface JWTResponse {
   token: string;

@@ -2,7 +2,8 @@
 
 import axios from 'axios';
 
-const API_URL = 'http://localhost:8080/api/transactions';
+const backendUrl = (window as any)?.env?.VITE_BACKEND_URL || '';
+const API_URL = `${backendUrl}/api/auth`;
 
 export interface Transaction {
   id: number;
