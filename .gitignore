@@ -28,3 +28,6 @@ Thumbs.db
 
 # DataBase
 mysql_data/
+
+# Email configuration
+src/main/resources/application.properties

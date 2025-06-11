@@ -3,10 +3,12 @@ package com.yourapp;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import com.yourapp.Dto.JWTTokenDto;
 import com.yourapp.Dto.LoginDto;
@@ -756,6 +758,15 @@ public class App {  // <--- This was missing!
 
                 if (insertedRows > 0) {
                     ctx.result("User registered successfully");
+                    
+                    // Send welcome email with error handling
+                    try {
+                        EmailService.sendWelcomeEmail(email, firstName, lastName);
+                        System.out.println("✅ Welcome email sent to: " + email);
+                    } catch (Exception emailError) {
+                        System.err.println("❌ Failed to send welcome email to " + email + ": " + emailError.getMessage());
+                        // Don't fail the registration if email fails - user is already created
+                    }
                 } else {
                     ctx.status(500).result("Failed to register user");
                 }
@@ -1095,6 +1106,133 @@ public class App {  // <--- This was missing!
 
             } catch (NumberFormatException e) {
                 ctx.status(400).result("Invalid user ID format");
+            } catch (Exception e) {
+                e.printStackTrace();
+                ctx.status(500).result("Server error: " + e.getMessage());
+            }
+        });
+
+
+        // POST /api/auth/forgot-password
+        app.post("/api/auth/forgot-password", ctx -> {
+            Map<String, Object> body = ctx.bodyAsClass(Map.class);
+            String email = (String) body.get("email");
+            
+            if (email == null || email.trim().isEmpty()) {
+                ctx.status(400).result("Email is required");
+                return;
+            }
+            
+            try (Connection conn = Db.getConnection()) {
+                // Check if user exists
+                String checkSql = "SELECT id FROM users WHERE email = ?";
+                PreparedStatement checkStmt = conn.prepareStatement(checkSql);
+                checkStmt.setString(1, email.toLowerCase());
+                ResultSet rs = checkStmt.executeQuery();
+                
+                if (rs.next()) {
+                    int userId = rs.getInt("id");
+                    
+                    // Generate secure token
+                    String token = UUID.randomUUID().toString().replace("-", "") + 
+                                UUID.randomUUID().toString().replace("-", "");
+                    
+                    // Set expiration (30 minutes from now)
+                    Timestamp expiresAt = new Timestamp(System.currentTimeMillis() + 30 * 60 * 1000);
+                    
+                    // Delete any existing tokens for this user
+                    String deleteSql = "DELETE FROM password_reset_tokens WHERE user_id = ?";
+                    PreparedStatement deleteStmt = conn.prepareStatement(deleteSql);
+                    deleteStmt.setInt(1, userId);
+                    deleteStmt.executeUpdate();
+                    
+                    // Insert new token
+                    String insertSql = "INSERT INTO password_reset_tokens (user_id, token, expires_at) VALUES (?, ?, ?)";
+                    PreparedStatement insertStmt = conn.prepareStatement(insertSql);
+                    insertStmt.setInt(1, userId);
+                    insertStmt.setString(2, token);
+                    insertStmt.setTimestamp(3, expiresAt);
+                    insertStmt.executeUpdate();
+                    
+                    // Send email (with fallback for testing)
+                    try {
+                        EmailService.sendPasswordResetEmail(email, token);
+                    } catch (Exception emailError) {
+                        System.err.println("Failed to send email, but token created: " + emailError.getMessage());
+                        // For testing - print token to console
+                        System.out.println("🔑 Reset token for " + email + ": " + token);
+                        System.out.println("🔗 Reset URL: http://localhost:3000/reset-password?token=" + token);
+                    }
+                }
+                
+                // Always return success message (security measure)
+                ctx.result("Ako ova email adresa postoji, dobićete link za resetovanje šifre.");
+                
+            } catch (Exception e) {
+                e.printStackTrace();
+                ctx.status(500).result("Server error: " + e.getMessage());
+            }
+        });
+
+        // POST /api/auth/reset-password
+        app.post("/api/auth/reset-password", ctx -> {
+            Map<String, Object> body = ctx.bodyAsClass(Map.class);
+            String token = (String) body.get("token");
+            String newPassword = (String) body.get("newPassword");
+            
+            if (token == null || newPassword == null) {
+                ctx.status(400).result("Token and new password are required");
+                return;
+            }
+            
+            if (newPassword.length() < 6) {
+                ctx.status(400).result("Password must be at least 6 characters long");
+                return;
+            }
+            
+            try (Connection conn = Db.getConnection()) {
+                // Find valid token
+                String tokenSql = "SELECT user_id FROM password_reset_tokens WHERE token = ? AND expires_at > NOW() AND used = FALSE";
+                PreparedStatement tokenStmt = conn.prepareStatement(tokenSql);
+                tokenStmt.setString(1, token);
+                ResultSet tokenRs = tokenStmt.executeQuery();
+                
+                if (tokenRs.next()) {
+                    int userId = tokenRs.getInt("user_id");
+                    
+                    // Start transaction
+                    conn.setAutoCommit(false);
+                    
+                    try {
+                        // Update password
+                        String updatePasswordSql = "UPDATE users SET password = ? WHERE id = ?";
+                        PreparedStatement updatePasswordStmt = conn.prepareStatement(updatePasswordSql);
+                        updatePasswordStmt.setString(1, newPassword); // In production, hash this!
+                        updatePasswordStmt.setInt(2, userId);
+                        updatePasswordStmt.executeUpdate();
+                        
+                        // Mark token as used
+                        String markUsedSql = "UPDATE password_reset_tokens SET used = TRUE WHERE token = ?";
+                        PreparedStatement markUsedStmt = conn.prepareStatement(markUsedSql);
+                        markUsedStmt.setString(1, token);
+                        markUsedStmt.executeUpdate();
+                        
+                        // Commit transaction
+                        conn.commit();
+                        
+                        ctx.result("Šifra je uspešno promenjena!");
+                        
+                    } catch (Exception e) {
+                        conn.rollback();
+                        throw e;
+                    } finally {
+                        conn.setAutoCommit(true);
+                    }
+                    
+                } else {
+                    ctx.status(400).result("Nevažeći ili istekli token za resetovanje šifre");
+                }
+                
             } catch (Exception e) {
                 e.printStackTrace();
                 ctx.status(500).result("Server error: " + e.getMessage());

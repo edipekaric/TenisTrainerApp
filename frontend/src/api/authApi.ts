@@ -39,3 +39,13 @@ export async function adminRegisterUser(userData: {
     }
   });
 }
+
+export async function forgotPassword(email: string): Promise<string> {
+  const response = await axios.post<string>(`${API_URL}/forgot-password`, { email });
+  return response.data;
+}
+
+export async function resetPassword(token: string, newPassword: string): Promise<string> {
+  const response = await axios.post<string>(`${API_URL}/reset-password`, { token, newPassword });
+  return response.data;
+}

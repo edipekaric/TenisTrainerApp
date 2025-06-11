@@ -10,6 +10,8 @@ import AdminAllUsers from './pages/AdminAllUsers';
 import UserProfile from './pages/UserProfile';
 import AdminRegisterUser from './pages/AdminRegisterUser';
 import AdminTransaction from './pages/AdminTransaction';
+import ForgotPasswordPage from './pages/ForgotPasswordPage';
+import ResetPasswordPage from './pages/ResetPasswordPage';
 
   
 const App: React.FC = () => {
@@ -26,6 +28,8 @@ const App: React.FC = () => {
         <Route path="/user-profile" element={<UserProfile />} />
         <Route path="/admin/register-user" element={<AdminRegisterUser />} />
         <Route path="/admin/transaction" element={<AdminTransaction />} />
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="/reset-password" element={<ResetPasswordPage />} />
       </Routes>
     </Router>
   );

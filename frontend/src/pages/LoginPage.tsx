@@ -1,20 +1,19 @@
 import React, { useState } from 'react';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
-import { useAuth } from '../context/AuthContext'; // <-- ovo dodaj!
+import { useAuth } from '../context/AuthContext';
 import '../styles/nicepage.css';
 import { getUserRole } from '../utils/jwtUtils';
-import { useNavigate } from 'react-router-dom'; // for redirect
-
+import { useNavigate } from 'react-router-dom';
 
 const LoginPage: React.FC = () => {
-  const { login } = useAuth(); // <-- hook za login
+  const { login } = useAuth();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
 
-  const navigate = useNavigate(); // add this line at top of component
+  const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,7 +38,6 @@ const LoginPage: React.FC = () => {
       setError('Login neuspješan. Provjerite email i lozinku.');
     }
   };
-
 
   return (
     <div className="u-body u-xl-mode">
@@ -105,7 +103,7 @@ const LoginPage: React.FC = () => {
             {/* Zaboravljena sifra */}
             <div style={{ textAlign: 'right', marginBottom: '20px' }}>
               <a
-                href="#"
+                href="/forgot-password"
                 style={{
                   fontSize: '0.9rem',
                   color: '#478ac9',
