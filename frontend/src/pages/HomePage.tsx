@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import Header from '../components/Header.tsx';
 import Footer from '../components/Footer.tsx';
 import actionBudi from '../assets/3.jpg';
@@ -6,6 +7,12 @@ import coach from '../assets/2.jpg';
 import './HomePage.css';
 
 const HomePage: React.FC = () => {
+  const navigate = useNavigate();
+
+  const handleRezervisiTerminClick = () => {
+    navigate('/login');
+  };
+
   return (
     <div className="u-body u-xl-mode">
       <Header />
@@ -39,12 +46,12 @@ const HomePage: React.FC = () => {
                         <p className="u-text u-text-2">
                           Za starije rekreativce ili takmičare koji se žele unaprijediti, održati formu ili jednostavno uživati u kvalitetnoj igri, nudim profesionalne sparing treninge. Igrate rekreativno, u klupskim ligama ili se vraćate na teren nakon pauze — sparing je idealan način da ostanete u ritmu, poradite na specifičnim udarcima i taktičkim elementima igre. Treninge u potpunosti prilagođavam vašim željama — tempo, tip igre, situacijski treninzi ili priprema za mečeve. Ako volite dinamične i uzbudljive mečeve u opuštenoj atmosferi, ovo je pravi izbor za vas.
                         </p>
-                        <a
-                          href="#"
+                        <button
+                          onClick={handleRezervisiTerminClick}
                           className="u-border-2 u-border-palette-1-dark-1 u-btn u-btn-round u-button-style u-custom-font u-heading-font u-radius-3 u-btn-1"
                         >
                           Rezervišite termin
-                        </a>
+                        </button>
                       </div>
                     </div>
                   </div>
