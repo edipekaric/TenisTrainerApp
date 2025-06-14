@@ -95,7 +95,7 @@ public class EmailService {
             message.setSubject("Resetovanje šifre - Tenis Coach Tarik");
             
             // Reset URL
-            String baseUrl = FRONTEND_URL != null ? FRONTEND_URL : "http://localhost:3000";
+            String baseUrl = FRONTEND_URL != null ? FRONTEND_URL : "https://tariktenis.com";
             String resetUrl = baseUrl + "/reset-password?token=" + resetToken;
             
             // HTML email content
