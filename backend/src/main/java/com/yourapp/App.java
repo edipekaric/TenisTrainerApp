@@ -1168,7 +1168,7 @@ public class App {
                         System.err.println("Slanje e-pošte nije uspjelo, ali token je stvoren: " + emailError.getMessage());
                         // For testing - print token to console
                         System.out.println("🔑 Resetiranje tokena za " + email + ": " + token);
-                        System.out.println("🔗 Reset URL: http://localhost:3000/reset-password?token=" + token);
+                        System.out.println("🔗 Reset URL: https://tariktenis.com/reset-password?token=" + token);
                     }
                 }
                 
