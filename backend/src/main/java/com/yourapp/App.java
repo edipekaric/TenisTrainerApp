@@ -81,7 +81,7 @@ public class App {
         app.get("/health", ctx -> ctx.result("OK"));
 
         // Root endpoint
-        app.get("/", ctx -> ctx.result("Hello from plain Java backend!"));
+        app.get("/", ctx -> ctx.result("Pozdrav od @pekaricc!"));
 
         // Try DB connection
         try (Connection conn = Db.getConnection()) {
@@ -118,10 +118,10 @@ public class App {
                         String token = tokenProvider.generateToken(loginDto.getEmail(), role);
                         ctx.json(new JWTTokenDto(token));
                     } else {
-                        ctx.status(401).result("Invalid password");
+                        ctx.status(401).result("Nevažeća lozinka");
                     }
                 } else {
-                    ctx.status(401).result("User not found");
+                    ctx.status(401).result("Korisnik nije pronađen");
                 }
 
             } catch (Exception e) {
@@ -285,7 +285,7 @@ public class App {
                 insertStmt.setString(3, end_time);
                 insertStmt.executeUpdate();
 
-                ctx.result("Time slot added");
+                ctx.result("Time Slot uspješno dodan");
 
             } catch (Exception e) {
                 e.printStackTrace();
@@ -311,7 +311,7 @@ public class App {
                 ResultSet userRs = userStmt.executeQuery();
 
                 if (!userRs.next()) {
-                    ctx.status(500).result("User not found");
+                    ctx.status(500).result("Korisnik nije pronađen");
                     return;
                 }
 
@@ -325,9 +325,9 @@ public class App {
                 int updatedRows = updateStmt.executeUpdate();
 
                 if (updatedRows > 0) {
-                    ctx.result("Slot booked successfully");
+                    ctx.result("Time Slot je uspješno rezerviran");
                 } else {
-                    ctx.status(400).result("Slot already booked or does not exist");
+                    ctx.status(400).result("Time Slot je već rezerviran ili ne postoji");
                 }
 
             } catch (Exception e) {
@@ -354,7 +354,7 @@ public class App {
                 ResultSet userRs = userStmt.executeQuery();
 
                 if (!userRs.next()) {
-                    ctx.status(500).result("User not found");
+                    ctx.status(500).result("Korisnik nije pronađen");
                     return;
                 }
 
@@ -367,13 +367,13 @@ public class App {
                 ResultSet checkRs = checkStmt.executeQuery();
 
                 if (!checkRs.next()) {
-                    ctx.status(400).result("Slot is not booked or does not exist");
+                    ctx.status(400).result("Time Slot nije rezerviran ili ne postoji");
                     return;
                 }
 
                 int bookedBy = checkRs.getInt("booked_by");
                 if (bookedBy != userId) {
-                    ctx.status(403).result("You can only unbook your own slots");
+                    ctx.status(403).result("Možete otkazati samo svoje rezervacije.");
                     return;
                 }
 
@@ -384,9 +384,9 @@ public class App {
                 int updatedRows = updateStmt.executeUpdate();
 
                 if (updatedRows > 0) {
-                    ctx.result("Slot unbooked successfully");
+                    ctx.result("Time Slot uspješno otkazan");
                 } else {
-                    ctx.status(500).result("Failed to unbook slot");
+                    ctx.status(500).result("Neuspjeh u otkazivanju time slot-a");
                 }
 
             } catch (Exception e) {
@@ -424,7 +424,7 @@ public class App {
                 ResultSet checkRs = checkStmt.executeQuery();
 
                 if (!checkRs.next()) {
-                    ctx.status(404).result("Time slot not found");
+                    ctx.status(404).result("Time slot nije pronađen");
                     return;
                 }
 
@@ -437,9 +437,9 @@ public class App {
                 int deletedRows = deleteStmt.executeUpdate();
 
                 if (deletedRows > 0) {
-                    ctx.result("Time slot deleted successfully");
+                    ctx.result("Time Slot uspješno obrisan");
                 } else {
-                    ctx.status(404).result("Time slot not found");
+                    ctx.status(404).result("Time Slot nije pronađen");
                 }
 
             } catch (Exception e) {
@@ -620,7 +620,7 @@ public class App {
                     
                     ctx.json(user);
                 } else {
-                    ctx.status(404).result("User not found");
+                    ctx.status(404).result("Korisnik nije pronađen");
                 }
 
             } catch (Exception e) {
@@ -646,7 +646,7 @@ public class App {
                 String phone = (String) body.get("phone");
 
                 if (firstName == null || lastName == null || newEmail == null) {
-                    ctx.status(400).result("Missing required fields");
+                    ctx.status(400).result("Nedostaju potrebna polja");
                     return;
                 }
 
@@ -659,7 +659,7 @@ public class App {
                     ResultSet checkRs = checkStmt.executeQuery();
 
                     if (checkRs.next()) {
-                        ctx.status(400).result("Email already taken by another user");
+                        ctx.status(400).result("Korisnik sa ovim email već postoji");
                         return;
                     }
                 }
@@ -676,9 +676,9 @@ public class App {
                 int updatedRows = updateStmt.executeUpdate();
 
                 if (updatedRows > 0) {
-                    ctx.result("Profile updated successfully");
+                    ctx.result("Uspješno ažuriran račun");
                 } else {
-                    ctx.status(404).result("User not found");
+                    ctx.status(404).result("Korisnik ne postoji");
                 }
 
             } catch (Exception e) {
@@ -718,13 +718,13 @@ public class App {
                 Object balanceObj = body.get("balance");
 
                 if (firstName == null || lastName == null || email == null || password == null || role == null) {
-                    ctx.status(400).result("Missing required fields");
+                    ctx.status(400).result("Nedostaju potrebna polja");
                     return;
                 }
 
                 // Validate role
                 if (!"USER".equals(role) && !"ADMIN".equals(role)) {
-                    ctx.status(400).result("Invalid role. Must be USER or ADMIN");
+                    ctx.status(400).result("Nevažeća uloga. Mora biti USER ili ADMIN");
                     return;
                 }
 
@@ -734,7 +734,7 @@ public class App {
                     try {
                         balance = Double.parseDouble(balanceObj.toString());
                     } catch (NumberFormatException e) {
-                        ctx.status(400).result("Invalid balance format");
+                        ctx.status(400).result("Nevažeći format balance-a");
                         return;
                     }
                 }
@@ -746,7 +746,7 @@ public class App {
                 ResultSet checkRs = checkStmt.executeQuery();
 
                 if (checkRs.next()) {
-                    ctx.status(400).result("Email already exists");
+                    ctx.status(400).result("Email već postoji");
                     return;
                 }
 
@@ -766,18 +766,18 @@ public class App {
                 int insertedRows = insertStmt.executeUpdate();
 
                 if (insertedRows > 0) {
-                    ctx.result("User registered successfully");
+                    ctx.result("Korisnik je uspješno registriran");
                     
                     // Send welcome email with error handling
                     try {
                         EmailService.sendWelcomeEmail(email, firstName, lastName);
-                        System.out.println("✅ Welcome email sent to: " + email);
+                        System.out.println("✅ Email dobrodošlice poslat na: " + email);
                     } catch (Exception emailError) {
-                        System.err.println("❌ Failed to send welcome email to " + email + ": " + emailError.getMessage());
+                        System.err.println("❌ Email dobrodošlice nije poslat na" + email + ": " + emailError.getMessage());
                         // Don't fail the registration if email fails - user is already created
                     }
                 } else {
-                    ctx.status(500).result("Failed to register user");
+                    ctx.status(500).result("Registracija korisnika nije uspjela");
                 }
 
             } catch (Exception e) {
@@ -812,7 +812,7 @@ public class App {
                 String newPassword = (String) body.get("new_password");
 
                 if (userIdObj == null || newPassword == null) {
-                    ctx.status(400).result("Missing required fields");
+                    ctx.status(400).result("Nedostaju potrebna polja");
                     return;
                 }
 
@@ -820,13 +820,13 @@ public class App {
                 try {
                     userId = Integer.parseInt(userIdObj.toString());
                 } catch (NumberFormatException e) {
-                    ctx.status(400).result("Invalid user ID format");
+                    ctx.status(400).result("Nevažeći format korisničkog ID-a");
                     return;
                 }
 
                 // Validate password length
                 if (newPassword.length() < 6) {
-                    ctx.status(400).result("Password must be at least 6 characters long");
+                    ctx.status(400).result("Lozinka mora imati najmanje 6 znakova");
                     return;
                 }
 
@@ -837,7 +837,7 @@ public class App {
                 ResultSet checkRs = checkStmt.executeQuery();
 
                 if (!checkRs.next()) {
-                    ctx.status(404).result("User not found");
+                    ctx.status(404).result("Korisnik nije pronađen");
                     return;
                 }
 
@@ -852,9 +852,9 @@ public class App {
                 int updatedRows = updateStmt.executeUpdate();
 
                 if (updatedRows > 0) {
-                    ctx.result("Password reset successfully");
+                    ctx.result("Resetiranje lozinke uspješno");
                 } else {
-                    ctx.status(500).result("Failed to reset password");
+                    ctx.status(500).result("Nije uspjelo resetiranje lozinke");
                 }
 
             } catch (Exception e) {
@@ -911,7 +911,7 @@ public class App {
                 String description = (String) body.get("description");
 
                 if (userIdObj == null || transactionType == null || amountObj == null || description == null) {
-                    ctx.status(400).result("Missing required fields");
+                    ctx.status(400).result("Nedostaju potrebna polja");
                     return;
                 }
 
@@ -922,19 +922,19 @@ public class App {
                     userId = Integer.parseInt(userIdObj.toString());
                     amount = Double.parseDouble(amountObj.toString());
                 } catch (NumberFormatException e) {
-                    ctx.status(400).result("Invalid number format");
+                    ctx.status(400).result("Neispravan format broja");
                     return;
                 }
 
                 // Validate transaction type
                 if (!"ADD".equals(transactionType) && !"SUBTRACT".equals(transactionType)) {
-                    ctx.status(400).result("Invalid transaction type. Must be ADD or SUBTRACT");
+                    ctx.status(400).result("Neispravna vrsta transakcije. Mora biti ADD ili SUBTRACT");
                     return;
                 }
 
                 // Validate amount
                 if (amount <= 0) {
-                    ctx.status(400).result("Amount must be positive");
+                    ctx.status(400).result("Iznos mora biti pozitivan");
                     return;
                 }
 
@@ -945,7 +945,7 @@ public class App {
                 ResultSet balanceRs = balanceStmt.executeQuery();
 
                 if (!balanceRs.next()) {
-                    ctx.status(404).result("User not found");
+                    ctx.status(404).result("Korisnik nije pronađen");
                     return;
                 }
 
@@ -986,7 +986,7 @@ public class App {
 
                     // Commit transaction
                     conn.commit();
-                    ctx.result("Transaction processed successfully");
+                    ctx.result("Transakcija je uspješno obrađena");
 
                 } catch (Exception e) {
                     // Rollback on error
@@ -1074,7 +1074,7 @@ public class App {
                 ResultSet userCheckRs = userCheckStmt.executeQuery();
 
                 if (!userCheckRs.next()) {
-                    ctx.status(404).result("User not found");
+                    ctx.status(404).result("Korisnik nije pronađen");
                     return;
                 }
 
@@ -1083,7 +1083,7 @@ public class App {
 
                 // Only allow if admin or user requesting their own transactions
                 if (!"ADMIN".equals(currentUserRole) && currentUserId != requestedUserId) {
-                    ctx.status(403).result("Forbidden: Can only view your own transactions");
+                    ctx.status(403).result("Zabranjeno: Možete pregledavati samo svoje transakcije");
                     return;
                 }
 
@@ -1113,7 +1113,7 @@ public class App {
                 ctx.json(transactions);
 
             } catch (NumberFormatException e) {
-                ctx.status(400).result("Invalid user ID format");
+                ctx.status(400).result("Nevažeći format korisničkog ID-a");
             } catch (Exception e) {
                 e.printStackTrace();
                 ctx.status(500).result("Server error: " + e.getMessage());
@@ -1126,7 +1126,7 @@ public class App {
             String email = (String) body.get("email");
             
             if (email == null || email.trim().isEmpty()) {
-                ctx.status(400).result("Email is required");
+                ctx.status(400).result("Email je obavezan");
                 return;
             }
             
@@ -1165,15 +1165,15 @@ public class App {
                     try {
                         EmailService.sendPasswordResetEmail(email, token);
                     } catch (Exception emailError) {
-                        System.err.println("Failed to send email, but token created: " + emailError.getMessage());
+                        System.err.println("Slanje e-pošte nije uspjelo, ali token je stvoren: " + emailError.getMessage());
                         // For testing - print token to console
-                        System.out.println("🔑 Reset token for " + email + ": " + token);
+                        System.out.println("🔑 Resetiranje tokena za " + email + ": " + token);
                         System.out.println("🔗 Reset URL: http://localhost:3000/reset-password?token=" + token);
                     }
                 }
                 
                 // Always return success message (security measure)
-                ctx.result("Ako ova email adresa postoji, dobićete link za resetovanje šifre.");
+                ctx.result("Ako ova email adresa postoji, dobit ćete link za resetovanje šifre.");
                 
             } catch (Exception e) {
                 e.printStackTrace();
@@ -1188,12 +1188,12 @@ public class App {
             String newPassword = (String) body.get("newPassword");
             
             if (token == null || newPassword == null) {
-                ctx.status(400).result("Token and new password are required");
+                ctx.status(400).result("Token i nova lozinka su potrebni");
                 return;
             }
             
             if (newPassword.length() < 6) {
-                ctx.status(400).result("Password must be at least 6 characters long");
+                ctx.status(400).result("Lozinka mora imati najmanje 6 znakova");
                 return;
             }
             
@@ -1227,7 +1227,7 @@ public class App {
                         // Commit transaction
                         conn.commit();
                         
-                        ctx.result("Šifra je uspešno promenjena!");
+                        ctx.result("Šifra je uspješno promjenjena!");
                         
                     } catch (Exception e) {
                         conn.rollback();
