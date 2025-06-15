@@ -326,6 +326,34 @@ public class App {
 
                 if (updatedRows > 0) {
                     ctx.result("Time Slot je uspješno rezerviran");
+                    
+                    // DODANO - Pošaljite email notifikaciju
+                    try {
+                        // Dobijte detalje slot-a i korisnika za email
+                        String slotDetailsSql = "SELECT ts.date, ts.start_time, ts.end_time, u.first_name, u.last_name, u.email " +
+                                            "FROM time_slots ts " +
+                                            "JOIN users u ON ts.booked_by = u.id " +
+                                            "WHERE ts.id = ?";
+                        PreparedStatement slotDetailsStmt = conn.prepareStatement(slotDetailsSql);
+                        slotDetailsStmt.setInt(1, slotId);
+                        ResultSet slotDetailsRs = slotDetailsStmt.executeQuery();
+                        
+                        if (slotDetailsRs.next()) {
+                            EmailService.sendSlotBookedNotification(
+                                slotDetailsRs.getDate("date").toString(),
+                                slotDetailsRs.getString("start_time"),
+                                slotDetailsRs.getString("end_time"),
+                                slotDetailsRs.getString("first_name"),
+                                slotDetailsRs.getString("last_name"),
+                                slotDetailsRs.getString("email")
+                            );
+                            System.out.println("✅ Email notifikacija za booking poslana admin-ima");
+                        }
+                    } catch (Exception emailError) {
+                        System.err.println("❌ Email notifikacija za booking nije poslana: " + emailError.getMessage());
+                        // Ne prekidaj rezervaciju ako email ne radi
+                    }
+                    
                 } else {
                     ctx.status(400).result("Time Slot je već rezerviran ili ne postoji");
                 }
@@ -377,6 +405,35 @@ public class App {
                     return;
                 }
 
+                // DODANO - Dobijte detalje za email PRIJE unbooking-a
+                String slotDetailsForEmail = null;
+                String startTimeForEmail = null;
+                String endTimeForEmail = null;
+                String userFirstNameForEmail = null;
+                String userLastNameForEmail = null;
+                String userEmailForEmail = null;
+                
+                try {
+                    String emailDetailsSql = "SELECT ts.date, ts.start_time, ts.end_time, u.first_name, u.last_name, u.email " +
+                                            "FROM time_slots ts " +
+                                            "JOIN users u ON ts.booked_by = u.id " +
+                                            "WHERE ts.id = ?";
+                    PreparedStatement emailDetailsStmt = conn.prepareStatement(emailDetailsSql);
+                    emailDetailsStmt.setInt(1, slotId);
+                    ResultSet emailDetailsRs = emailDetailsStmt.executeQuery();
+                    
+                    if (emailDetailsRs.next()) {
+                        slotDetailsForEmail = emailDetailsRs.getDate("date").toString();
+                        startTimeForEmail = emailDetailsRs.getString("start_time");
+                        endTimeForEmail = emailDetailsRs.getString("end_time");
+                        userFirstNameForEmail = emailDetailsRs.getString("first_name");
+                        userLastNameForEmail = emailDetailsRs.getString("last_name");
+                        userEmailForEmail = emailDetailsRs.getString("email");
+                    }
+                } catch (Exception e) {
+                    System.err.println("❌ Greška pri dobijanju detalja za email: " + e.getMessage());
+                }
+
                 // Unbook the slot
                 String updateSql = "UPDATE time_slots SET is_booked = false, booked_by = NULL WHERE id = ?";
                 PreparedStatement updateStmt = conn.prepareStatement(updateSql);
@@ -385,6 +442,25 @@ public class App {
 
                 if (updatedRows > 0) {
                     ctx.result("Time Slot uspješno otkazan");
+                    
+                    // DODANO - Pošaljite email notifikaciju
+                    if (slotDetailsForEmail != null) {
+                        try {
+                            EmailService.sendSlotUnbookedNotification(
+                                slotDetailsForEmail,
+                                startTimeForEmail,
+                                endTimeForEmail,
+                                userFirstNameForEmail,
+                                userLastNameForEmail,
+                                userEmailForEmail
+                            );
+                            System.out.println("✅ Email notifikacija za unbooking poslana admin-ima");
+                        } catch (Exception emailError) {
+                            System.err.println("❌ Email notifikacija za unbooking nije poslana: " + emailError.getMessage());
+                            // Ne prekidaj unbooking ako email ne radi
+                        }
+                    }
+                    
                 } else {
                     ctx.status(500).result("Neuspjeh u otkazivanju time slot-a");
                 }

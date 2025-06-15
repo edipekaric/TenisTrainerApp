@@ -338,5 +338,139 @@ public class EmailService {
         }
     }
 
-    
+    public static void sendSlotBookedNotification(String slotDate, String startTime, String endTime, 
+                                                String userFirstName, String userLastName, String userEmail) {
+        try {
+            String subject = "🟢 Novi Time Slot Rezerviran - " + slotDate + " " + startTime;
+            
+            String htmlContent = String.format(
+                "<html>" +
+                "<body style=\"font-family: Arial, sans-serif; color: #333;\">" +
+                    "<div style=\"max-width: 600px; margin: 0 auto; padding: 20px;\">" +
+                        "<h2 style=\"color: #28a745;\">✅ Novi Time Slot Rezerviran</h2>" +
+                        
+                        "<div style=\"background: #f8f9fa; padding: 15px; border-radius: 8px; margin: 20px 0;\">" +
+                            "<h3 style=\"margin-top: 0; color: #495057;\">Detalji rezervacije:</h3>" +
+                            "<p><strong>📅 Datum:</strong> %s</p>" +
+                            "<p><strong>🕐 Vrijeme:</strong> %s - %s</p>" +
+                        "</div>" +
+                        
+                        "<div style=\"background: #e9ecef; padding: 15px; border-radius: 8px; margin: 20px 0;\">" +
+                            "<h3 style=\"margin-top: 0; color: #495057;\">Korisnik:</h3>" +
+                            "<p><strong>👤 Ime:</strong> %s %s</p>" +
+                            "<p><strong>📧 Email:</strong> %s</p>" +
+                        "</div>" +
+                        
+                        "<p style=\"color: #6c757d; font-size: 12px; margin-top: 30px;\">" +
+                            "Ova poruka je automatski generirana od strane aplikacije." +
+                        "</p>" +
+                    "</div>" +
+                "</body>" +
+                "</html>", 
+                slotDate, startTime, endTime, userFirstName, userLastName, userEmail);
+            
+            // Pošaljite email admin-ima
+            sendEmailToAdmins(subject, htmlContent);
+            
+        } catch (Exception e) {
+            System.err.println("❌ Greška pri slanju booking notifikacije: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Send unbooking notification to admins
+     */
+    public static void sendSlotUnbookedNotification(String slotDate, String startTime, String endTime, 
+                                                String userFirstName, String userLastName, String userEmail) {
+        try {
+            String subject = "🔴 Time Slot Otkazan - " + slotDate + " " + startTime;
+            
+            String htmlContent = String.format(
+                "<html>" +
+                "<body style=\"font-family: Arial, sans-serif; color: #333;\">" +
+                    "<div style=\"max-width: 600px; margin: 0 auto; padding: 20px;\">" +
+                        "<h2 style=\"color: #dc3545;\">❌ Time Slot Otkazan</h2>" +
+                        
+                        "<div style=\"background: #f8f9fa; padding: 15px; border-radius: 8px; margin: 20px 0;\">" +
+                            "<h3 style=\"margin-top: 0; color: #495057;\">Detalji otkazane rezervacije:</h3>" +
+                            "<p><strong>📅 Datum:</strong> %s</p>" +
+                            "<p><strong>🕐 Vrijeme:</strong> %s - %s</p>" +
+                        "</div>" +
+                        
+                        "<div style=\"background: #e9ecef; padding: 15px; border-radius: 8px; margin: 20px 0;\">" +
+                            "<h3 style=\"margin-top: 0; color: #495057;\">Korisnik koji je otkazao:</h3>" +
+                            "<p><strong>👤 Ime:</strong> %s %s</p>" +
+                            "<p><strong>📧 Email:</strong> %s</p>" +
+                        "</div>" +
+                        
+                        "<p style=\"background: #fff3cd; padding: 10px; border-radius: 5px; border-left: 4px solid #ffc107;\">" +
+                            "💡 <strong>Time slot je sada slobodan i dostupan za rezervaciju.</strong>" +
+                        "</p>" +
+                        
+                        "<p style=\"color: #6c757d; font-size: 12px; margin-top: 30px;\">" +
+                            "Ova poruka je automatski generirana od strane aplikacije." +
+                        "</p>" +
+                    "</div>" +
+                "</body>" +
+                "</html>", 
+                slotDate, startTime, endTime, userFirstName, userLastName, userEmail);
+            
+            // Pošaljite email admin-ima
+            sendEmailToAdmins(subject, htmlContent);
+            
+        } catch (Exception e) {
+            System.err.println("❌ Greška pri slanju unbooking notifikacije: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Helper method to send email to both admins
+     */
+    private static void sendEmailToAdmins(String subject, String htmlContent) throws Exception {
+        String[] adminEmails = {
+            "tarik.budimlija@gmail.com",
+            "pekaric.edi1@gmail.com"
+        };
+        
+        for (String adminEmail : adminEmails) {
+            sendEmail(adminEmail, subject, htmlContent);
+            System.out.println("📧 Notifikacija poslana na: " + adminEmail);
+        }
+    }
+
+    private static void sendEmail(String toEmail, String subject, String htmlContent) throws Exception {
+        // Enhanced SMTP properties with SSL/TLS fixes
+        Properties props = new Properties();
+        props.put("mail.smtp.host", SMTP_HOST != null ? SMTP_HOST : "smtp.gmail.com");
+        props.put("mail.smtp.port", SMTP_PORT != null ? SMTP_PORT : "587");
+        props.put("mail.smtp.auth", "true");
+        props.put("mail.smtp.starttls.enable", "true");
+        props.put("mail.smtp.starttls.required", "true");
+        
+        // Add these SSL/TLS protocol fixes
+        props.put("mail.smtp.ssl.protocols", "TLSv1.2");
+        props.put("mail.smtp.ssl.trust", "smtp.gmail.com");
+        props.put("mail.smtp.ssl.checkserveridentity", "true");
+        
+        // Create session
+        Session session = Session.getInstance(props, new Authenticator() {
+            @Override
+            protected PasswordAuthentication getPasswordAuthentication() {
+                return new PasswordAuthentication(EMAIL_USERNAME, EMAIL_PASSWORD);
+            }
+        });
+        
+        // Create message
+        Message message = new MimeMessage(session);
+        message.setFrom(new InternetAddress(EMAIL_USERNAME));
+        message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(toEmail));
+        message.setSubject(subject);
+        message.setContent(htmlContent, "text/html; charset=utf-8");
+        
+        // Send email
+        Transport.send(message);
+    }
+
 }
