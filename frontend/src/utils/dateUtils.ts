@@ -35,6 +35,10 @@ export class DateUtils {
     monthName: string;
     isToday: boolean;
   }> {
+    // Custom Bosnian abbreviations
+    const bosnianDayNames = ['ned', 'pon', 'uto', 'sri', 'čet', 'pet', 'sub'];
+    const bosnianMonthNames = ['jan', 'feb', 'mar', 'apr', 'maj', 'jun', 'jul', 'avg', 'sep', 'okt', 'nov', 'dec'];
+    
     const days = [];
     const today = this.getBosnianTime();
     
@@ -42,15 +46,9 @@ export class DateUtils {
       const date = new Date(today);
       date.setDate(today.getDate() + i);
       
-      const dayName = date.toLocaleDateString('bs-BA', { 
-        weekday: 'short',
-        timeZone: this.BOSNIA_TIMEZONE 
-      }) || date.toLocaleDateString('en-US', { weekday: 'short' });
-      
-      const monthName = date.toLocaleDateString('bs-BA', { 
-        month: 'short',
-        timeZone: this.BOSNIA_TIMEZONE 
-      }) || date.toLocaleDateString('en-US', { month: 'short' });
+      // Use custom Bosnian abbreviations
+      const dayName = bosnianDayNames[date.getDay()];
+      const monthName = bosnianMonthNames[date.getMonth()];
       
       days.push({
         date: date,
