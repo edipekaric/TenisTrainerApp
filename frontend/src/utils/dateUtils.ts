@@ -35,10 +35,6 @@ export class DateUtils {
     monthName: string;
     isToday: boolean;
   }> {
-    // Custom Bosnian abbreviations
-    const bosnianDayNames = ['ned', 'pon', 'uto', 'sri', 'čet', 'pet', 'sub'];
-    const bosnianMonthNames = ['jan', 'feb', 'mar', 'apr', 'maj', 'jun', 'jul', 'avg', 'sep', 'okt', 'nov', 'dec'];
-    
     const days = [];
     const today = this.getBosnianTime();
     
@@ -46,9 +42,16 @@ export class DateUtils {
       const date = new Date(today);
       date.setDate(today.getDate() + i);
       
-      // Use custom Bosnian abbreviations
-      const dayName = bosnianDayNames[date.getDay()];
-      const monthName = bosnianMonthNames[date.getMonth()];
+      // Use Serbian Latin script explicitly
+      const dayName = date.toLocaleDateString('sr-Latn-RS', { 
+        weekday: 'short',
+        timeZone: this.BOSNIA_TIMEZONE 
+      }) || date.toLocaleDateString('sr-Latn', { weekday: 'short' }) || 'ned';
+      
+      const monthName = date.toLocaleDateString('sr-Latn-RS', { 
+        month: 'short',
+        timeZone: this.BOSNIA_TIMEZONE 
+      }) || date.toLocaleDateString('sr-Latn', { month: 'short' }) || 'jan';
       
       days.push({
         date: date,
@@ -85,7 +88,7 @@ export class DateUtils {
 
   static formatForDisplay(dateString: string): string {
     const date = this.parseLocalDateString(dateString);
-    return date.toLocaleDateString('bs-BA', {
+    return date.toLocaleDateString('sr-Latn-RS', {
       weekday: 'long',
       year: 'numeric',
       month: 'long',
@@ -100,7 +103,7 @@ export class DateUtils {
     }
     
     const date = new Date(`2000-01-01T${time}`);
-    return date.toLocaleTimeString('bs-BA', {
+    return date.toLocaleTimeString('sr-Latn-RS', {
       hour: '2-digit',
       minute: '2-digit',
       hour12: false,
@@ -110,7 +113,7 @@ export class DateUtils {
 
   static getCurrentTimeString(): string {
     const now = this.getBosnianTime();
-    return now.toLocaleTimeString('bs-BA', {
+    return now.toLocaleTimeString('sr-Latn-RS', {
       hour: '2-digit',
       minute: '2-digit',
       hour12: false
