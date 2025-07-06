@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import AdminHeaderBar from '../components/AdminHeaderBar';
 import Footer from '../components/Footer';
 import { getMyTimeSlots, getAllTimeSlots, addTimeSlot, deleteTimeSlot } from '../api/timeSlotApi';
+import { DateUtils } from '../utils/dateUtils';
 
 interface TimeSlot {
   id: number;
@@ -38,33 +39,11 @@ const AdminDash: React.FC = () => {
   const [addingSlot, setAddingSlot] = useState(false);
   const [deletingSlot, setDeletingSlot] = useState<number | null>(null);
 
-  // Generate next 7 days starting from today
-  const generateNext7Days = (): DateInfo[] => {
-    const days: DateInfo[] = [];
-    const today = new Date();
-    
-    for (let i = 0; i < 7; i++) {
-      const date = new Date(today);
-      date.setDate(today.getDate() + i);
-      
-      days.push({
-        date: date,
-        dateString: date.toISOString().split('T')[0],
-        dayName: date.toLocaleDateString('en-US', { weekday: 'short' }),
-        dayNumber: date.getDate(),
-        monthName: date.toLocaleDateString('en-US', { month: 'short' }),
-        isToday: i === 0
-      });
-    }
-    return days;
-  };
-
-  const [next7Days] = useState<DateInfo[]>(generateNext7Days());
+  const [next7Days] = useState<DateInfo[]>(DateUtils.generateNextDays(7));
 
   useEffect(() => {
     loadSlots();
-    // Set default date for new slot to today
-    const today = new Date().toISOString().split('T')[0];
+    const today = DateUtils.getTodayString();
     setNewSlotDate(today);
   }, []);
 
@@ -73,7 +52,7 @@ const AdminDash: React.FC = () => {
     try {
       const [my, all] = await Promise.all([
         getMyTimeSlots(),
-        getAllTimeSlots(7) // Changed from getFreeTimeSlots to getAllTimeSlots
+        getAllTimeSlots(7)
       ]);
       setMySlots(my);
       setAllSlots(all);
@@ -96,7 +75,7 @@ const AdminDash: React.FC = () => {
     setDeletingSlot(slotId);
     try {
       await deleteTimeSlot(slotId);
-      await loadSlots(); // Refresh data
+      await loadSlots();
       alert('Time slot deleted successfully!');
     } catch (error) {
       console.error('Error deleting time slot:', error);
@@ -114,7 +93,6 @@ const AdminDash: React.FC = () => {
       return;
     }
 
-    // Validate time format and logic
     if (newSlotStartTime >= newSlotEndTime) {
       alert('End time must be after start time');
       return;
@@ -123,9 +101,8 @@ const AdminDash: React.FC = () => {
     setAddingSlot(true);
     try {
       await addTimeSlot(newSlotDate, newSlotStartTime, newSlotEndTime);
-      await loadSlots(); // Refresh data
+      await loadSlots();
       setShowAddSlotModal(false);
-      // Reset form
       setNewSlotStartTime('');
       setNewSlotEndTime('');
       alert('Time slot added successfully!');
@@ -149,7 +126,6 @@ const AdminDash: React.FC = () => {
     return getSlotsForDate(dateString).length;
   };
 
-  // Generate time options for the dropdown
   const generateTimeOptions = () => {
     const times = [];
     for (let hour = 5; hour <= 22; hour++) {
@@ -168,7 +144,6 @@ const AdminDash: React.FC = () => {
       <AdminHeaderBar />
       <main style={{ padding: '20px', maxWidth: '1200px', margin: '0 auto' }}>
         
-        {/* Admin Header with Add Button */}
         <div style={{ 
           display: 'flex', 
           justifyContent: 'space-between', 
@@ -204,7 +179,6 @@ const AdminDash: React.FC = () => {
           </button>
         </div>
 
-        {/* My Created Slots Summary */}
         <div style={{ marginBottom: '30px' }}>
           <h2 style={{ color: '#2c3e50', marginBottom: '15px' }}>My Created Slots</h2>
           {mySlots.length > 0 ? (
@@ -242,7 +216,6 @@ const AdminDash: React.FC = () => {
           )}
         </div>
 
-        {/* 7 Day Overview */}
         <div style={{ marginBottom: '30px' }}>
           <h2 style={{ color: '#2c3e50', marginBottom: '15px' }}>Weekly Overview</h2>
           <div style={{ 
@@ -299,7 +272,6 @@ const AdminDash: React.FC = () => {
           </div>
         </div>
 
-        {/* Time Slots for Selected Date */}
         {selectedDate && (
           <div style={{ 
             backgroundColor: '#f8f9fa', 
@@ -362,7 +334,6 @@ const AdminDash: React.FC = () => {
                       {slot.is_booked ? '🔴 BOOKED' : '🟢 AVAILABLE'}
                     </div>
                     
-                    {/* Show booked by user info if available */}
                     {slot.is_booked && slot.booked_by_user && (
                       <div style={{ 
                         fontSize: '11px', 
@@ -389,7 +360,6 @@ const AdminDash: React.FC = () => {
                       Slot ID: {slot.id}
                     </div>
                     
-                    {/* Delete Button */}
                     <button
                       onClick={() => handleDeleteTimeSlot(slot.id)}
                       disabled={deletingSlot === slot.id}
@@ -437,7 +407,6 @@ const AdminDash: React.FC = () => {
           </div>
         )}
 
-        {/* Add Time Slot Modal */}
         {showAddSlotModal && (
           <div style={{
             position: 'fixed',
@@ -472,7 +441,7 @@ const AdminDash: React.FC = () => {
                     type="date"
                     value={newSlotDate}
                     onChange={(e) => setNewSlotDate(e.target.value)}
-                    min={new Date().toISOString().split('T')[0]}
+                    min={DateUtils.getTodayString()}
                     style={{
                       width: '100%',
                       padding: '10px',

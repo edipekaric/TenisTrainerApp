@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TimeZone;
 import java.util.UUID;
 
 import com.yourapp.Dto.JWTTokenDto;
@@ -61,6 +62,9 @@ public class App {
     }
 
     public static void main(String[] args) {
+
+        TimeZone.setDefault(TimeZone.getTimeZone("Europe/Sarajevo"));
+        System.setProperty("user.timezone", "Europe/Sarajevo");
 
         System.out.println("🚀 Starting Backend...");
 

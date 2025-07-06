@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import UserHeaderBar from '../components/UserHeaderBar';
 import { getFreeTimeSlots, getMyTimeSlots, bookTimeSlot, unbookTimeSlot } from '../api/timeSlotApi';
 import Footer from '../components/Footer';
+import { DateUtils } from '../utils/dateUtils';
 
 interface TimeSlot {
   id: number;
@@ -29,28 +30,7 @@ const UserDash: React.FC = () => {
   const [bookingSlot, setBookingSlot] = useState<number | null>(null);
   const [unbookingSlot, setUnbookingSlot] = useState<number | null>(null);
 
-  // Generate next 7 days starting from today
-  const generateNext7Days = (): DateInfo[] => {
-    const days: DateInfo[] = [];
-    const today = new Date();
-    
-    for (let i = 0; i < 7; i++) {
-      const date = new Date(today);
-      date.setDate(today.getDate() + i);
-      
-      days.push({
-        date: date,
-        dateString: date.toISOString().split('T')[0],
-        dayName: date.toLocaleDateString('en-US', { weekday: 'short' }),
-        dayNumber: date.getDate(),
-        monthName: date.toLocaleDateString('en-US', { month: 'short' }),
-        isToday: i === 0
-      });
-    }
-    return days;
-  };
-
-  const [next7Days] = useState<DateInfo[]>(generateNext7Days());
+  const [next7Days] = useState<DateInfo[]>(DateUtils.generateNextDays(7));
 
   useEffect(() => {
     loadSlots();
@@ -84,7 +64,7 @@ const UserDash: React.FC = () => {
     setBookingSlot(slotId);
     try {
       await bookTimeSlot(slotId);
-      await loadSlots(); // Refresh data
+      await loadSlots();
       alert('Time slot booked successfully!');
     } catch (error) {
       console.error('Error booking time slot:', error);
@@ -102,7 +82,7 @@ const UserDash: React.FC = () => {
     setUnbookingSlot(slotId);
     try {
       await unbookTimeSlot(slotId);
-      await loadSlots(); // Refresh data
+      await loadSlots();
       alert('Time slot unbooked successfully!');
     } catch (error) {
       console.error('Error unbooking time slot:', error);
@@ -125,7 +105,7 @@ const UserDash: React.FC = () => {
   };
 
   const getUpcomingBookings = () => {
-    const today = new Date().toISOString().split('T')[0];
+    const today = DateUtils.getTodayString();
     return myBookings.filter(booking => booking.date >= today);
   };
 
@@ -136,7 +116,6 @@ const UserDash: React.FC = () => {
       <UserHeaderBar />
       <main style={{ padding: '20px', maxWidth: '1200px', margin: '0 auto' }}>
         
-        {/* User Header */}
         <div style={{ 
           marginBottom: '30px',
           padding: '20px',
@@ -148,7 +127,6 @@ const UserDash: React.FC = () => {
           <p style={{ color: '#7f8c8d', margin: 0 }}>Book available time slots and manage your bookings</p>
         </div>
 
-        {/* My Upcoming Bookings Summary */}
         <div style={{ marginBottom: '30px' }}>
           <h2 style={{ color: '#2c3e50', marginBottom: '15px' }}>My Upcoming Bookings</h2>
           {upcomingBookings.length > 0 ? (
@@ -213,7 +191,6 @@ const UserDash: React.FC = () => {
           )}
         </div>
 
-        {/* 7 Day Overview */}
         <div style={{ marginBottom: '30px' }}>
           <h2 style={{ color: '#2c3e50', marginBottom: '15px' }}>Available Slots - Next 7 Days</h2>
           <div style={{ 
@@ -270,7 +247,6 @@ const UserDash: React.FC = () => {
           </div>
         </div>
 
-        {/* Available Slots for Selected Date */}
         {selectedDate && (
           <div style={{ 
             backgroundColor: '#f8f9fa', 
@@ -305,7 +281,6 @@ const UserDash: React.FC = () => {
               <p>Loading available slots...</p>
             ) : (
               <div>
-                {/* My Bookings for this date */}
                 {getMyBookingsForDate(selectedDate).length > 0 && (
                   <div style={{ marginBottom: '30px' }}>
                     <h4 style={{ color: '#3498db', marginBottom: '15px' }}>🎯 Your Bookings for this Date</h4>
@@ -340,7 +315,6 @@ const UserDash: React.FC = () => {
                             Booking ID: {booking.id}
                           </div>
                           
-                          {/* Unbook Button */}
                           <button
                             onClick={() => handleUnbookSlot(booking.id)}
                             disabled={unbookingSlot === booking.id}
@@ -375,7 +349,6 @@ const UserDash: React.FC = () => {
                   </div>
                 )}
 
-                {/* Available slots */}
                 <h4 style={{ color: '#27ae60', marginBottom: '15px' }}>🟢 Available Slots</h4>
                 <div style={{ 
                   display: 'grid', 
@@ -410,7 +383,6 @@ const UserDash: React.FC = () => {
                         Slot ID: {slot.id}
                       </div>
                       
-                      {/* Book Button */}
                       <button
                         onClick={() => handleBookSlot(slot.id)}
                         disabled={bookingSlot === slot.id}
@@ -459,7 +431,6 @@ const UserDash: React.FC = () => {
           </div>
         )}
 
-        {/* Booking Statistics */}
         <div style={{ 
           display: 'grid', 
           gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',

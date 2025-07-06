@@ -13,7 +13,7 @@ public class Db {
     private static final String DB_PASS = System.getenv("DB_PASS");
 
     private static final String URL = "jdbc:mysql://" + DB_HOST + ":" + DB_PORT + "/" + DB_NAME
-            + "?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC";
+            + "?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Europe/Sarajevo";
 
     public static Connection getConnection() throws SQLException {
         boolean connected = false;

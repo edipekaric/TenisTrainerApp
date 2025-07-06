@@ -3,6 +3,7 @@ import UserHeaderBar from '../components/UserHeaderBar';
 import { getUserProfile, updateUserProfile } from '../api/userApi';
 import { getMyTimeSlots, unbookTimeSlot } from '../api/timeSlotApi';
 import Footer from '../components/Footer';
+import { DateUtils } from '../utils/dateUtils';
 
 interface UserProfile {
   id: number;
@@ -76,7 +77,7 @@ const UserProfile: React.FC = () => {
     setUpdating(true);
     try {
       await updateUserProfile(editForm);
-      await loadProfileData(); // Refresh data
+      await loadProfileData();
       setEditing(false);
       alert('Profile updated successfully!');
     } catch (error) {
@@ -105,7 +106,7 @@ const UserProfile: React.FC = () => {
     setUnbookingSlot(slotId);
     try {
       await unbookTimeSlot(slotId);
-      await loadProfileData(); // Refresh data to update the bookings list
+      await loadProfileData();
       alert('Appointment unbooked successfully!');
     } catch (error) {
       console.error('Error unbooking slot:', error);
@@ -116,12 +117,12 @@ const UserProfile: React.FC = () => {
   };
 
   const getUpcomingBookings = () => {
-    const today = new Date().toISOString().split('T')[0];
+    const today = DateUtils.getTodayString();
     return myBookings.filter(booking => booking.date >= today);
   };
 
   const getPastBookings = () => {
-    const today = new Date().toISOString().split('T')[0];
+    const today = DateUtils.getTodayString();
     return myBookings.filter(booking => booking.date < today);
   };
 
@@ -159,7 +160,6 @@ const UserProfile: React.FC = () => {
       <UserHeaderBar />
       <main style={{ padding: '20px', maxWidth: '800px', margin: '0 auto' }}>
         
-        {/* Profile Header */}
         <div style={{ 
           marginBottom: '30px',
           padding: '25px',
@@ -212,7 +212,6 @@ const UserProfile: React.FC = () => {
           )}
         </div>
 
-        {/* Profile Information Card */}
         <div style={{ 
           marginBottom: '30px',
           backgroundColor: '#fff',
@@ -390,7 +389,6 @@ const UserProfile: React.FC = () => {
           </div>
         </div>
 
-        {/* Booking Statistics */}
         <div style={{ 
           display: 'grid', 
           gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
@@ -437,7 +435,6 @@ const UserProfile: React.FC = () => {
           </div>
         </div>
 
-        {/* My Bookings */}
         <div style={{ 
           backgroundColor: '#fff',
           borderRadius: '10px',
