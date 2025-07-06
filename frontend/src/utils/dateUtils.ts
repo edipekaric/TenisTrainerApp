@@ -42,12 +42,12 @@ export class DateUtils {
       const date = new Date(today);
       date.setDate(today.getDate() + i);
       
-      const dayName = date.toLocaleDateString('sr-BA', { 
+      const dayName = date.toLocaleDateString('bs-BA', { 
         weekday: 'short',
         timeZone: this.BOSNIA_TIMEZONE 
       }) || date.toLocaleDateString('en-US', { weekday: 'short' });
       
-      const monthName = date.toLocaleDateString('sr-BA', { 
+      const monthName = date.toLocaleDateString('bs-BA', { 
         month: 'short',
         timeZone: this.BOSNIA_TIMEZONE 
       }) || date.toLocaleDateString('en-US', { month: 'short' });
@@ -87,7 +87,7 @@ export class DateUtils {
 
   static formatForDisplay(dateString: string): string {
     const date = this.parseLocalDateString(dateString);
-    return date.toLocaleDateString('sr-BA', {
+    return date.toLocaleDateString('bs-BA', {
       weekday: 'long',
       year: 'numeric',
       month: 'long',
@@ -102,7 +102,7 @@ export class DateUtils {
     }
     
     const date = new Date(`2000-01-01T${time}`);
-    return date.toLocaleTimeString('sr-BA', {
+    return date.toLocaleTimeString('bs-BA', {
       hour: '2-digit',
       minute: '2-digit',
       hour12: false,
@@ -112,7 +112,7 @@ export class DateUtils {
 
   static getCurrentTimeString(): string {
     const now = this.getBosnianTime();
-    return now.toLocaleTimeString('sr-BA', {
+    return now.toLocaleTimeString('bs-BA', {
       hour: '2-digit',
       minute: '2-digit',
       hour12: false
